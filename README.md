@@ -28,8 +28,8 @@ The data folder contains CSV files representing the availability of assistants, 
 
 ## Algorithms
 
-- Tabu Search: Explores the solution space while avoiding cycles through a tabu list.
+- **Tabu Search**: Explores the solution space while avoiding cycles through a tabu list.
 
-- Simulated Annealing: Accepts worse solutions probabilistically to escape local optima.
+- **Simulated Annealing**: Accepts worse solutions probabilistically to escape local optima.
 
-- Evolutionary Algorithm: Uses population-based search with selection, crossover, and mutation to evolve solutions.
+- **Evolutionary Algorithm**: Uses population-based search with selection, crossover, and mutation to evolve solutions.
