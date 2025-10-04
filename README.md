@@ -1,4 +1,4 @@
-# student-assistant-scheduling
+# Student Assistant Scheduling
 An algorithm for planning university assistance schedules
 
 ## Project Overview
