@@ -2,7 +2,7 @@
 An algorithm for planning university assistance schedules
 
 ## Project Overview
-This project aims to develop algorithms for assigning university assistance schedules to maximize the number of students who can attend. The scheduling problem considers the availability of both students and assistants, as well as forbidden time slots. The implemented methods include Tabu Search, Simulated Annealing, and Evolutionary Algorithms.
+This project seek to develop algorithms for assigning university assistance schedules to maximize the number of students who can attend. The scheduling problem considers the availability of both students and assistants, as well as forbidden time slots. The implemented methods include Tabu Search, Simulated Annealing, and Evolutionary Algorithms.
 
 ## Data
 The data folder contains CSV files representing the availability of assistants, students, and forbidden time slots. Each file has 50 cells, where each cell corresponds to a day and a time block.
