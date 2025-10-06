@@ -11,3 +11,8 @@ dependencies = [
     "pandas>=2.3.3",
     "seaborn>=0.13.2",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

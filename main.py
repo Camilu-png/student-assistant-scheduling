@@ -1,9 +1,10 @@
 def main():
-    print("Hello from student-assistant-scheduling!")
-    print("This project is still under development. ")
-    print("You can run the tests to see some functionality in action.")
-    print("Use 'python -m {file_name}' to run a specific test file.")
-
+    print("\nStudent Assistant Scheduling Project")
+    print("=======================================")
+    print("This project provides a scheduling system for assigning assistants to students.")
+    print("You can use the following commands:\n")
+    print("  ▶  uv run pytest            → Run all automated tests")
+    print("  ▶  python -m debug.<file>   → Run a specific debug script (e.g., debug.debug_initial_solution)\n")
 
 if __name__ == "__main__":
     main()
