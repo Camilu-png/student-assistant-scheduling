@@ -2,10 +2,6 @@ from src.data_loader import DataLoader
 import numpy as np
 
 def print_matrix_3d(matrix, name="Matrix"):
-    """
-    Imprime una matriz 3D [slot][day][entity] de manera visual.
-    Cada entity se muestra con un símbolo.
-    """
     symbols = np.array(["·", "█", "*"])
     if matrix.size == 0:
         print(f"{name} is empty.")
@@ -22,7 +18,6 @@ def print_matrix_3d(matrix, name="Matrix"):
             print(" ".join(row))
 
 def print_matrix_2d(matrix, name="Matrix"):
-    """Imprime una matriz 2D [slot][day] de manera visual"""
     symbols = np.array(["·", "█"])
     print(f"\n=== {name} ({len(matrix[0]) if matrix.size > 0 else 0} days x {len(matrix)} slots) ===")
     if matrix.size == 0:
