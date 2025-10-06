@@ -33,3 +33,13 @@ The data folder contains CSV files representing the availability of assistants, 
 - **Simulated Annealing**: Accepts worse solutions probabilistically to escape local optima.
 
 - **Evolutionary Algorithm**: Uses population-based search with selection, crossover, and mutation to evolve solutions.
+
+## Environment Setup with uv
+
+```bash
+# Install all required
+uv sync
+
+# Run Python scripts
+uv run python main.py
+```
