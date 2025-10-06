@@ -1,7 +1,3 @@
-"""
-Debug script to visualize the greedy initial solution for the timetable.
-"""
-
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy

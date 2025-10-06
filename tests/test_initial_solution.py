@@ -1,22 +1,40 @@
+import pytest
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy
 
-def test_greedy_initial_solution():
+@pytest.fixture
+def solution():
     loader = DataLoader()
     data_dict = loader.load_all()
     data = TimetableData(**data_dict)
-    solution = greedy(data)
-    print("=== Greedy Initial Solution ===")
-    for s in range(solution.data.num_slots):
-        row = []
-        for d in range(solution.data.num_days):
-            assistants = solution.assistants_in_slot(d, s)
-            if assistants.size == 0:
-                    row.append("·")
-            else:
-                row.append("".join(map(str, assistants)))
-        print(" ".join(f"{c:2}" for c in row))
+    return greedy(data)
 
-if __name__ == "__main__":
-    test_greedy_initial_solution()
+def test_only_one_assistant_per_slot(solution):
+    num_slots = solution.data.num_slots
+    num_days = solution.data.num_days
+    for i in range(num_days):
+        for j in range(num_slots):
+            assistants = solution.assistants_in_slot(i, j)
+            assert len(assistants) <= 1, f"More than one assistant assigned to day {i}, slot {j}"
+
+def test_no_assistant_in_forbidden_slots(solution):
+    num_slots = solution.data.num_slots
+    num_days = solution.data.num_days
+    forbidden = solution.data.forbidden
+    for i in range(num_days):
+        for j in range(num_slots):
+            if forbidden[j][i] == 1:
+                assistants = solution.assistants_in_slot(i, j)
+                assert len(assistants) == 0, f"Assistant assigned to forbidden slot at day {i}, slot {j}"
+
+def test_assistants_assigned_only_to_free_slots(solution):
+    num_slots = solution.data.num_slots
+    num_days = solution.data.num_days
+
+    for i in range(num_days):
+        for j in range(num_slots):
+            if solution.is_assigned(i, j):
+                assistant = solution.assistants_in_slot(i, j)[0]
+                slot_value = solution.data.assistants[j, i, assistant] 
+                assert slot_value == 0, f"Assistant {assistant} assigned to a busy slot on day {i}, slot {j}"
