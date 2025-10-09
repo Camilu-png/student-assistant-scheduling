@@ -21,7 +21,7 @@ class DataLoader:
         [day][slot][entity] con dimensiones automáticas según la data.
         """
         folder_path = os.path.join(self.data_dir, folder_name)
-        files = sorted(glob(os.path.join(folder_path, "*.csv")))
+        files = sorted(glob(os.path.join(folder_path, "*.csv")), key=lambda x: int(os.path.splitext(os.path.basename(x))[0]))
         if not files:
             print(f"No CSV files found in {folder_path}")
             return np.array([])
