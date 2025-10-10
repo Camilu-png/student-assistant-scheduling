@@ -10,8 +10,9 @@ def greedy(data: TimetableData) -> Solution:
                     continue  # Slot is forbidden
                 if solution.is_assigned(slot, day):
                     continue  # Already assigned
-                solution.assign(slot, day, assistant)
-                break
+                if data.assistants[slot, day, assistant] == 0:
+                    solution.assign(slot, day, assistant)
+                    break  # Move to the next assistant
             if solution.assistants_assigned_day(day, assistant):
                 break
     return solution
