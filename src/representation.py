@@ -32,16 +32,25 @@ class Solution:
         self.X[slot, day, assistant] = 0
 
     def is_assigned(self, slot: int, day: int) -> bool:
-        return np.sum(self.X[slot, day, :]) > 0
+        return self.X[slot, day, :].any()
     
     def assistants_in_slot(self, slot: int, day: int) -> np.ndarray:
         return np.where(self.X[slot, day, :] == 1)[0]
     
-    def assistants_assigned_day(self,day:int, assistant: int) -> int:
-        return np.sum(self.X[:, day, assistant]) == 1
+    def assistants_assigned_day(self, day: int, assistant: int) -> bool:
+        return self.X[:, day, assistant].sum() == 1
     
     def free_slots(self, slot: int) -> list:
         return np.where(np.sum(self.X[slot, :, :], axis=1) == 0)[0]
     
     def free_days(self, day: int) -> list:
         return np.where(np.sum(self.X[:, day, :], axis=1) == 0)[0]
+    
+    def assistantship(self) -> np.array:
+        assistantship = np.zeros((self.data.num_assistants,), dtype=tuple)
+        for day in range(self.data.num_days):
+            for slot in range(self.data.num_slots):
+                if self.is_assigned(slot, day):
+                    assistant = self.assistants_in_slot(slot, day)[0]
+                    assistantship[assistant] = (slot, day)
+        return assistantship

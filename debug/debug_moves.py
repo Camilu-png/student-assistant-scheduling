@@ -1,7 +1,7 @@
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy
-from src.moves import day_shift, slot_shift, swap_assistants
+from src.moves import day_shift, slot_shift, swap_assistants, random_move
 import numpy as np
 
 def visualize_solution(solution):
@@ -41,8 +41,10 @@ if __name__ == "__main__":
     data_dict = loader.load_all()
     data = TimetableData(**data_dict)
     solution = greedy(data)
-    test_swap_assistants(solution)
-    print("\n" + "="*40 + "\n")
-    test_day_shift(solution)
-    print("\n" + "="*40 + "\n")
-    test_slot_shift(solution)
+    for _ in range(5):
+        print("\nRandom Move")
+        visualize_solution(solution)
+        solution = random_move(solution)
+        print("After move:")
+        visualize_solution(solution)
+        print("-" * 40)
