@@ -44,7 +44,7 @@ def fitness(solution, data):
         fitness = float('-inf')
         for day in range(data.num_days):
             for slot in range(data.num_slots):
-                if data.students[slot, day, student] == 0 and solution.is_assigned(day, slot):
+                if data.students[slot, day, student] == 0 and solution.is_assigned(slot, day):
                     w = penalty_free_day(data, student, day) + penalty_slot(slot) + penalty_windows(data, slot, day, student)
                 if fitness < 1 - w:
                     fitness = 1 - w

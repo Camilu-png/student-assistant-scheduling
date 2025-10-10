@@ -11,7 +11,7 @@ def debug_greedy_initial_solution():
     for s in range(solution.data.num_slots):
         row = []
         for d in range(solution.data.num_days):
-            assistants = solution.assistants_in_slot(d, s)
+            assistants = solution.assistants_in_slot(s,d)
             if assistants.size == 0:
                 row.append("·")
             else:

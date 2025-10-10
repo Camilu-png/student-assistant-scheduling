@@ -6,11 +6,11 @@ def greedy(data: TimetableData) -> Solution:
     for assistant in range(data.num_assistants):
         for day in range(data.num_days):
             for slot in range(data.num_slots):
-                if data.forbidden[day, slot] == 1:
+                if data.forbidden[slot, day] == 1:
                     continue  # Slot is forbidden
-                if solution.is_assigned(day, slot):
+                if solution.is_assigned(slot, day):
                     continue  # Already assigned
-                solution.assign(day, slot, assistant)
+                solution.assign(slot, day, assistant)
                 break
             if solution.assistants_assigned_day(day, assistant):
                 break
