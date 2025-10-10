@@ -40,9 +40,8 @@ class Solution:
     def assistants_assigned_day(self,day:int, assistant: int) -> int:
         return np.sum(self.X[:, day, assistant]) == 1
     
-    #TODO: Vectorize these methods
     def free_slots(self, slot: int) -> list:
-        return [day for day in range(self.data.num_days) if not self.is_assigned(slot, day)]
+        return np.where(np.sum(self.X[slot, :, :], axis=1) == 0)[0]
     
     def free_days(self, day: int) -> list:
-        return [slot for slot in range(self.data.num_slots) if not self.is_assigned(slot, day)]
+        return np.where(np.sum(self.X[:, day, :], axis=1) == 0)[0]
