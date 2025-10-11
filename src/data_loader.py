@@ -5,7 +5,7 @@ import numpy as np
 from glob import glob
 
 class DataLoader:
-    def __init__(self, data_dir="data"):
+    def __init__(self, data_dir="data/test"):
         self.data_dir = data_dir
 
     def load_csv_file(self, path):
