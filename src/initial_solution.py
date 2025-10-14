@@ -1,5 +1,5 @@
 from src.representation import Solution, TimetableData
-import numpy as np
+
 
 def greedy(data: TimetableData) -> Solution:
     solution = Solution(data)
@@ -16,4 +16,3 @@ def greedy(data: TimetableData) -> Solution:
             if solution.assistants_assigned_day(day, assistant):
                 break
     return solution
-
