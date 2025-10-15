@@ -1,6 +1,7 @@
 from src.data_loader import DataLoader
 import numpy as np
 
+
 def print_matrix_3d(matrix, name="Matrix"):
     symbols = np.array(["·", "█", "*"])
     if matrix.size == 0:
@@ -17,15 +18,19 @@ def print_matrix_3d(matrix, name="Matrix"):
         for row in symbol_matrix:
             print(" ".join(row))
 
+
 def print_matrix_2d(matrix, name="Matrix"):
     symbols = np.array(["·", "█"])
-    print(f"\n=== {name} ({len(matrix[0]) if matrix.size > 0 else 0} days x {len(matrix)} slots) ===")
+    print(
+        f"\n=== {name} ({len(matrix[0]) if matrix.size > 0 else 0} days x {len(matrix)} slots) ==="
+    )
     if matrix.size == 0:
         return
     clipped = np.clip(matrix, 0, len(symbols) - 1)
     symbol_matrix = symbols[clipped]
     for row in symbol_matrix:
         print(" ".join(row))
+
 
 def main():
     loader = DataLoader()
@@ -34,6 +39,7 @@ def main():
     print_matrix_3d(data["students"], "Students")
     print_matrix_3d(data["assistants"], "Assistants")
     print_matrix_2d(data["forbidden"], "Forbidden")
+
 
 if __name__ == "__main__":
     main()
