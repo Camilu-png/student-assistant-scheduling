@@ -4,13 +4,14 @@ import numpy as np
 
 from glob import glob
 
+
 class DataLoader:
-    def __init__(self, data_dir="data/test"):
+    def __init__(self, data_dir):
         self.data_dir = data_dir
 
     def load_csv_file(self, path):
         """Lee un CSV y devuelve un array numpy de enteros."""
-        with open(path, newline='') as csvfile:
+        with open(path, newline="") as csvfile:
             reader = csv.reader(csvfile)
             data = [list(map(int, row)) for row in reader]
         return np.array(data, dtype=int)
@@ -21,7 +22,10 @@ class DataLoader:
         [day][slot][entity] con dimensiones automáticas según la data.
         """
         folder_path = os.path.join(self.data_dir, folder_name)
-        files = sorted(glob(os.path.join(folder_path, "*.csv")), key=lambda x: int(os.path.splitext(os.path.basename(x))[0]))
+        files = sorted(
+            glob(os.path.join(folder_path, "*.csv")),
+            key=lambda x: int(os.path.splitext(os.path.basename(x))[0]),
+        )
         if not files:
             print(f"No CSV files found in {folder_path}")
             return np.array([])
@@ -45,5 +49,5 @@ class DataLoader:
         return {
             "students": self.load_students_matrix(),
             "assistants": self.load_assistants_matrix(),
-            "forbidden": self.load_forbidden_matrix()
+            "forbidden": self.load_forbidden_matrix(),
         }
