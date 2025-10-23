@@ -42,6 +42,7 @@ def penalty_windows(data, slot_, day, student):
 
 def fitness(solution, data):
     fitness_count = 0
+    ineligible_students = 0
     for student in range(data.num_students):
         fitness = float("-inf")
         for day in range(data.num_days):
@@ -54,7 +55,10 @@ def fitness(solution, data):
                         + penalty_slot(slot)
                         + penalty_windows(data, slot, day, student)
                     )
+                    
                     if fitness < 1 - w:
                         fitness = 1 - w
-        fitness_count += fitness
-    return fitness_count
+        if fitness != float("-inf"):
+            fitness_count += fitness
+        else: ineligible_students+=1
+    return fitness_count, data.num_students-ineligible_students
