@@ -33,7 +33,7 @@ def simulated_annealing(
     solution, initial_temp: float, final_temp: float, alpha: float, max_iter: int, data
 ):
     current_solution = solution
-    current_fitness = fitness(current_solution, data)
+    current_fitness,_ = fitness(current_solution, data)
     best_solution = current_solution
     best_fitness = current_fitness
     temperature = initial_temp
@@ -44,7 +44,7 @@ def simulated_annealing(
         if validate_solution(new_solution)[0] == False:
             new_fitness = -np.inf
         else:
-            new_fitness = fitness(new_solution, data)
+            new_fitness,_ = fitness(new_solution, data)
         delta_fitness = new_fitness - current_fitness
 
         if delta_fitness > 0 or np.exp(delta_fitness / temperature) > np.random.rand():
