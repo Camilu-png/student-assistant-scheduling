@@ -7,6 +7,7 @@ class TimetableData:
     students: np.ndarray  # 3D array [slot][day][student]
     assistants: np.ndarray  # 3D array [slot][day][assistant]
     forbidden: np.ndarray  # 2D array [slot][day]
+    baseline: np.ndarray # 3D array [slot][day][assistant]
 
     @property
     def num_slots(self):
@@ -23,7 +24,6 @@ class TimetableData:
     @property
     def num_assistants(self):
         return self.assistants.shape[2]
-
 
 class Solution:
     def __init__(self, data: TimetableData):
@@ -77,3 +77,10 @@ class Solution:
                     assistant = self.assistants_in_slot(slot, day)[0]
                     assistantship[assistant] = (slot, day)
         return assistantship
+    
+    def get_slot_day(self, assistant):
+        for slot in range(self.data.num_slots):
+            for day in range(self.data.num_days):
+                if [slot, day, assistant] == 1:
+                    return (slot, day)
+        return (None, None)
