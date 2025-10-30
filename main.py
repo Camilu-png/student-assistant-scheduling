@@ -23,7 +23,7 @@ def main():
     bas_fitness, eligible_students = fitness(baseline_schedule, data)
     print("Baseline Solution Fitness:", bas_fitness)
     print("Students who can attend the assistantship:", eligible_students)
-    print("Attendance percentage:", (eligible_students*100)/data.num_students)
+    print("Attendance percentage:", round((eligible_students*100)/data.num_students, 2))
     baseline_schedule.view()
     
     # Create initial solution
@@ -31,7 +31,7 @@ def main():
     val_fitness, eligible_students = fitness(initial_solution, data)
     print("Initial Solution Fitness:", val_fitness)
     print("Students who can attend the assistantship:", eligible_students)
-    print("Attendance percentage:", (eligible_students*100)/data.num_students)
+    print("Attendance percentage:", round((eligible_students*100)/data.num_students, 2))
     initial_solution.view()
 
     print("")
@@ -48,7 +48,7 @@ def main():
     best_fitness, best_eligible_students = fitness(best_solution, data)
     print("Initial Solution Fitness:", best_fitness)
     print("Students who can attend the assistantship:", best_eligible_students)
-    print("Attendance percentage:", (best_eligible_students*100)/data.num_students)
+    print("Attendance percentage:", round((best_eligible_students*100)/data.num_students, 2))
     best_solution.view()
 
     data.assistants.view()

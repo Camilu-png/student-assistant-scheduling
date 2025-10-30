@@ -41,5 +41,5 @@ The data folder contains CSV files representing the availability of assistants, 
 uv sync
 
 # Run Python scripts
-uv run python main.py
+uv run python main.py {data path}
 ```
