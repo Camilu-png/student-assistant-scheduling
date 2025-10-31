@@ -2,7 +2,7 @@ from src.data_loader import DataLoader
 from src.representation import Solution, TimetableData
 from src.initial_solution import greedy
 from src.fitness import fitness
-from src.algorithms.simulated_annealing import simulated_annealing, validate_solution
+from src.algorithms.simulated_annealing import simulated_annealing
 from src.baseline import baseline
 import sys
 
