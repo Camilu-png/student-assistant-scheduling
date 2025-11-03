@@ -39,9 +39,9 @@ def simulated_annealing(
     temperature = initial_temp
 
     iteration = 0
-    while temperature > final_temp or iteration < max_iter:
+    while temperature > final_temp and iteration < max_iter:
         new_solution = random_move(current_solution)
-        if validate_solution(new_solution)[0] == False:
+        if not validate_solution(new_solution)[0]:
             new_fitness = -np.inf
         else:
             new_fitness,_ = fitness(new_solution, data)
