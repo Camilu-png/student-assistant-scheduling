@@ -1,7 +1,5 @@
 import numpy as np
 from src.moves import random_move
-from src.fitness import fitness
-
 
 def validate_solution(solution) -> tuple[bool, str]:
     num_slots = solution.data.num_slots
@@ -30,10 +28,10 @@ def validate_solution(solution) -> tuple[bool, str]:
 
 
 def simulated_annealing(
-    solution, initial_temp: float, final_temp: float, alpha: float, max_iter: int, data
+    solution, initial_temp: float, final_temp: float, alpha: float, max_iter: int, data, fitness: callable
 ):
     current_solution = solution
-    current_fitness,_ = fitness(current_solution, data)
+    current_fitness = fitness(current_solution, data)
     best_solution = current_solution
     best_fitness = current_fitness
     temperature = initial_temp
@@ -44,7 +42,7 @@ def simulated_annealing(
         if not validate_solution(new_solution)[0]:
             new_fitness = -np.inf
         else:
-            new_fitness,_ = fitness(new_solution, data)
+            new_fitness = fitness(new_solution, data)
         delta_fitness = new_fitness - current_fitness
 
         if delta_fitness > 0 or np.exp(delta_fitness / temperature) > np.random.rand():
