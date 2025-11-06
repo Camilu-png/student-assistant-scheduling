@@ -1,7 +1,7 @@
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy
-from src.moves import day_shift, slot_shift, swap_assistants, random_move
+from src.moves import day_shift, swap_assistants, random_move
 from src.algorithms.simulated_annealing import validate_solution
 
 

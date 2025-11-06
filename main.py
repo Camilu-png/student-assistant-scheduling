@@ -1,5 +1,4 @@
 import sys
-import pathlib
 from datetime import datetime
 from src.baseline import baseline
 from src.data_loader import DataLoader
@@ -7,6 +6,7 @@ from src.representation import TimetableData
 from src.initial_solution import greedy
 from src.fitness import fitness, fitness_without_soft_contraints
 from src.algorithms.simulated_annealing import simulated_annealing
+from src.save_solution import save_configuration
 
 
 def main():
@@ -34,22 +34,21 @@ def main():
     # Create initial solution
     initial_solution = greedy(data)
 
-    # # Parameters for Simulated Annealing
-    # initial_temp = 100_000.0
-    # final_temp = 1.0
-    # alpha = 0.98
-    # max_iter = 100_000
+    # Parameters for Simulated Annealing
 
     initial_temp = 100_000.0
     final_temp = 50.0
     alpha = 0.95
     max_iter = 100_000
 
-    path_dic = pathlib.Path("results").joinpath("solutions",path.replace("/", "_"), timestamp)
-    path_dic.mkdir(parents=True, exist_ok=True)
-
-    with path_dic.joinpath("configurations").open("a") as f:
-        f.write(f"Initial temperature: {initial_temp}\nFinal temperature: {final_temp}\nAlpha: {alpha}\nMaximun iterations: {max_iter}\n")
+    save_configuration(
+        initial_temp,
+        final_temp,
+        alpha,
+        max_iter,
+        path,
+        timestamp,
+    )
 
     # Ejecuting Simulated Annealing whitout soft constraints
     print("\nStarting Simulated Annealing without soft constraints...\n")
