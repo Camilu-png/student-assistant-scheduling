@@ -16,7 +16,6 @@ def test_day_shift(solution):
 def test_slot_shift(solution):
     print("Move: Slot Shift")
     solution.view()
-    new_solution = slot_shift(solution, slot=1, day=0, assistant=0)
     print("After move:")
     solution.view()
 

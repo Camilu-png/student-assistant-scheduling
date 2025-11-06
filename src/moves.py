@@ -43,7 +43,7 @@ def random_move(solution):
     if move_type in [day_shift, slot_shift] or len(assistantship) < 2:
         if move_type.__name__ == "swap_assistants":
             move_type = random.choice([day_shift, slot_shift])
-        
+
         index = random.randint(0, len(assistantship) - 1)
         slot, day = assistantship[index]
         return move_type(new_solution, slot, day, index)

@@ -7,7 +7,8 @@ from src.initial_solution import greedy
 from src.fitness import fitness
 from src.algorithms.simulated_annealing import simulated_annealing, validate_solution
 
-def run_sa_experiments(config_path="results/sa_configurations2.csv"):
+
+def run_sa_experiments(config_path="results/configurations/sa_configurations2.csv"):
     # Cargar configuraciones
     df = pd.read_csv(config_path)
     path = sys.argv[1]
@@ -30,7 +31,8 @@ def run_sa_experiments(config_path="results/sa_configurations2.csv"):
             cfg.final_temp,
             cfg.alpha,
             int(cfg.max_iter),
-            data
+            data,
+            fitness,
         )
 
         elapsed = time.time() - start
@@ -42,7 +44,9 @@ def run_sa_experiments(config_path="results/sa_configurations2.csv"):
         df.at[idx, "final_fitness"] = final_fit
         df.at[idx, "validity"] = valid
 
-        print(f"✅ {cfg.config_id}: fitness={final_fit:.2f}, time={elapsed:.2f}s, valid={valid}")
+        print(
+            f"✅ {cfg.config_id}: fitness={final_fit:.2f}, time={elapsed:.2f}s, valid={valid}"
+        )
 
         # Guardar el CSV actualizado cada vez (por si se interrumpe el proceso)
         df.to_csv(config_path, index=False)

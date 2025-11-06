@@ -54,14 +54,15 @@ def fitness(solution, data):
                         + penalty_slot(slot)
                         + penalty_windows(data, slot, day, student)
                     )
-                    
+
                     if fitness < 1 - w:
                         fitness = 1 - w
         if fitness != float("-inf"):
             fitness_count += fitness
     return fitness_count
 
-def fitness_without_soft_contraints(solution,data):
+
+def fitness_without_soft_contraints(solution, data):
     fitness_count = 0
     for student in range(data.num_students):
         assigned = False
@@ -75,4 +76,4 @@ def fitness_without_soft_contraints(solution,data):
             if assigned:
                 fitness_count += 1
                 break
-    return fitness_count    
+    return fitness_count

@@ -1,6 +1,7 @@
 import numpy as np
 from src.moves import random_move
 
+
 def validate_solution(solution) -> tuple[bool, str]:
     num_slots = solution.data.num_slots
     num_days = solution.data.num_days
@@ -28,7 +29,13 @@ def validate_solution(solution) -> tuple[bool, str]:
 
 
 def simulated_annealing(
-    solution, initial_temp: float, final_temp: float, alpha: float, max_iter: int, data, fitness: callable
+    solution,
+    initial_temp: float,
+    final_temp: float,
+    alpha: float,
+    max_iter: int,
+    data,
+    fitness: callable,
 ):
     current_solution = solution
     current_fitness = fitness(current_solution, data)

@@ -42,12 +42,12 @@ class DataLoader:
 
     def load_baseline_matrix(self):
         return self.load_folder_matrix("baseline")
-    
+
     def load_forbidden_matrix(self):
         """Lee forbidden.csv como matriz numpy [day][slot]"""
         path = os.path.join(self.data_dir, "forbidden.csv")
         return self.load_csv_file(path)
-    
+
     def load_all(self):
         return {
             "students": self.load_students_matrix(),
