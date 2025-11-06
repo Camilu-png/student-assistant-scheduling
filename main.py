@@ -6,7 +6,7 @@ from src.representation import TimetableData
 from src.initial_solution import greedy
 from src.fitness import fitness, fitness_without_soft_contraints
 from src.algorithms.simulated_annealing import simulated_annealing
-from src.save_solution import save_configuration
+from src.save_solution import save_configuration, save_solution_to_csv
 
 
 def main():
@@ -15,6 +15,21 @@ def main():
     print("==========================================\n")
     path = sys.argv[1]
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+
+    # Parameters for Simulated Annealing
+    initial_temp = 100_000.0
+    final_temp = 50.0
+    alpha = 0.95
+    max_iter = 100_000
+
+    save_configuration(
+        initial_temp,
+        final_temp,
+        alpha,
+        max_iter,
+        path,
+        timestamp,
+    )
 
     # Data Load
     loader = DataLoader(path)
@@ -30,25 +45,15 @@ def main():
     print(f"Students who can attend the assistantship: {bas_fitness_count}")
     print(f"Attendance percentage: {round(percentage_bas, 2)}%")
     baseline_schedule.view()
+    save_solution_to_csv(
+        baseline_schedule,
+        path,
+        timestamp,
+        "baseline_solution",
+    )
 
     # Create initial solution
     initial_solution = greedy(data)
-
-    # Parameters for Simulated Annealing
-
-    initial_temp = 100_000.0
-    final_temp = 50.0
-    alpha = 0.95
-    max_iter = 100_000
-
-    save_configuration(
-        initial_temp,
-        final_temp,
-        alpha,
-        max_iter,
-        path,
-        timestamp,
-    )
 
     # Ejecuting Simulated Annealing whitout soft constraints
     print("\nStarting Simulated Annealing without soft constraints...\n")
@@ -71,6 +76,12 @@ def main():
     print(f"Students who can attend the assistantship: {whithout_fitness_count}")
     print(f"Attendance percentage: {round(percentage_without, 2)}%")
     whithout_solution.view()
+    save_solution_to_csv(
+        whithout_solution,
+        path,
+        timestamp,
+        "sa_without_soft_constraints_solution",
+    )
 
     # Ejecuting Simulated Annealing
     print("\nStarting Simulated Annealing with constraints...\n")
@@ -86,6 +97,12 @@ def main():
         f"Attendance percentage: {round((best_fitness_count * 100) / data.num_students, 2)}%"
     )
     best_solution.view()
+    save_solution_to_csv(
+        best_solution,
+        path,
+        timestamp,
+        "sa_with_constraints_solution",
+    )
 
 
 if __name__ == "__main__":
