@@ -2,10 +2,12 @@ import csv
 import pathlib
 
 
-def save_solution_to_csv(solution, filepath, fitness_value, students_count, percentage):
-    """Save solution to CSV file in the same format as view() method"""
-    with open(filepath, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
+def save_solution_to_csv(solution, filepath, timestamp, name):
+    path_dic = pathlib.Path("results").joinpath(
+        "solutions", filepath.replace("/", "_"), timestamp
+    )
+    with path_dic.joinpath(f"{name}.csv").open("w", newline="") as csvfile:
+        writer = csv.writer(csvfile, delimiter=" ")
 
         # Write solution data
         for s in range(solution.data.num_slots):
