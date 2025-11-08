@@ -2,7 +2,7 @@
 An algorithm for planning university assistance schedules
 
 ## Project Overview
-This project seek to develop algorithms for assigning university assistance schedules to maximize the number of students who can attend. The scheduling problem considers the availability of both students and assistants, as well as forbidden time slots. The implemented methods include Tabu Search, Simulated Annealing, and Evolutionary Algorithms.
+This project seeks to develop an algorithm for assigning university assistance schedules to maximize the number of students who can attend. The scheduling problem considers the availability of both students and assistants, as well as forbidden time slots. The implemented method is simulated annealing.
 
 ## Data
 The data folder contains CSV files representing the availability of assistants, students, and forbidden time slots. Each file has 50 cells, where each cell corresponds to a day and a time block.
@@ -24,15 +24,7 @@ The data folder contains CSV files representing the availability of assistants, 
 
 1. Place the CSV files in the data folder
 2. Run the algorithm scripts to generate optimized schedules
-3. **The output will be a suggested schedule that respects all availability constraints while maximizing student participation**
-
-## Algorithms
-
-<!-- - **Tabu Search**: Explores the solution space while avoiding cycles through a tabu list. -->
-
-- **Simulated Annealing**: Accepts worse solutions probabilistically to escape local optima.
-
-<!-- - **Evolutionary Algorithm**: Uses population-based search with selection, crossover, and mutation to evolve solutions. -->
+3. **The result will be an analysis of the suggested schedule and two proposals obtained by the algorithm, one that maximizes attendance and another that also respects all availability restrictions.**
 
 ## Environment Setup with uv
 
@@ -43,3 +35,7 @@ uv sync
 # Run Python scripts
 uv run python main.py {data path}
 ```
+
+## Analysis
+
+For further analysis of the solutions, review the Jupyter notebooks located in the notebooks folder.
