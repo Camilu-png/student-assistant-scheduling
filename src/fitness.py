@@ -7,9 +7,9 @@ def penalty_free_day(data, student, day):
 
 def penalty_slot(slot):
     if slot == 0 or slot == 8 or slot == 9:
-        return 0.8
-    elif slot == 7:
         return 0.4
+    elif slot == 7:
+        return 0.3
     else:
         return 0
 
@@ -37,7 +37,7 @@ def penalty_windows(data, slot_, day, student):
                 window_l = 0
             else:
                 window_l += 1
-    return total_windows / 5
+    return total_windows / 6
 
 
 def fitness(solution, data):
