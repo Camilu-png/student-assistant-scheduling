@@ -36,7 +36,7 @@ def run_sa_experiments(config_path="results/configurations/sa_configurations2.cs
         )
 
         elapsed = time.time() - start
-        final_fit = fitness(best_solution, data)[0]
+        final_fit = fitness(best_solution, data)  # fitness ahora retorna un número directamente
         valid = validate_solution(best_solution)[0]
 
         # Guardar resultados en el DataFrame

@@ -1,3 +1,4 @@
+# Version 2.0
 def penalty_free_day(data, student, day):
     for slot in range(data.num_slots):
         if data.students[slot, day, student] == 1:
