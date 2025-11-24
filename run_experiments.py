@@ -8,7 +8,7 @@ from src.fitness import fitness
 from src.algorithms.simulated_annealing import simulated_annealing, validate_solution
 
 
-def run_sa_experiments(config_path="results/configurations/sa_configurations2.csv"):
+def run_sa_experiments(config_path="results/configurations/sa_configurations.csv"):
     # Cargar configuraciones
     df = pd.read_csv(config_path)
     path = sys.argv[1]
@@ -36,7 +36,9 @@ def run_sa_experiments(config_path="results/configurations/sa_configurations2.cs
         )
 
         elapsed = time.time() - start
-        final_fit = fitness(best_solution, data)  # fitness ahora retorna un número directamente
+        final_fit = fitness(
+            best_solution, data
+        )  # fitness ahora retorna un número directamente
         valid = validate_solution(best_solution)[0]
 
         # Guardar resultados en el DataFrame

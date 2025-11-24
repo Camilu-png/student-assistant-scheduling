@@ -1,13 +1,24 @@
+import numpy as np
 import pandas as pd
 import itertools
 
 
 def generate_sa_configurations():
     # Definition of parameter ranges for sa_configurations.csv
-    initial_temps = [1e5, 5e5, 1e6, 5e6]
-    final_temps = [1.0, 10.0, 50.0]
-    alphas = [0.95, 0.97, 0.98, 0.99]
-    max_iters = [10_000, 50_000, 100_000]
+    # initial_temps = [1e2, 1e3, 1e4, 1e5, 1e6]
+    # final_temps = [1e-3, 1e-2, 1e-1, 1, 10]
+    # alphas = [0.90, 0.93, 0.95, 0.97, 0.98, 0.99, 0.995, 0.999]
+    # max_iters = [5_000, 10_000, 50_000, 100_000, 250_000]
+
+    # initial_temps = [1e-1, 1, 10, 50, 100, 500]
+    # final_temps = [1e-6, 1e-4, 1e-3, 1e-2, 1e-1, 1]
+    # alphas = [0.85, 0.90, 0.93, 0.95, 0.97, 0.99, 0.995]
+    # max_iters = [1e3, 5e3, 1e4, 5e4, 1e5, 5e5]
+
+    initial_temps = np.logspace(2, 6, num=6)  # [1e2, 1e3, 1e4, 1e5, 1e6]
+    final_temps = np.logspace(-3, 1, num=5)  # [1e-3, 1e-2, 1e-1, 1, 10]
+    alphas = [0.90, 0.93, 0.95, 0.97, 0.98, 0.99, 0.995, 0.999]
+    max_iters = [5_000, 10_000, 50_000, 100_000, 250_000]
 
     configs = list(itertools.product(initial_temps, final_temps, alphas, max_iters))
 
@@ -35,7 +46,7 @@ def generate_sa_configurations():
         ]
     ]
 
-    output_path = "results/configurations/sa_configurations2.csv"
+    output_path = "results/configurations/sa_configurations.csv"
     df.to_csv(output_path, index=False)
 
     print(f"Se generaron {len(df)} configuraciones y se guardaron en '{output_path}'.")
