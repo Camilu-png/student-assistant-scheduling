@@ -1,4 +1,4 @@
-# Version 2.0
+# Version 3.0
 def penalty_free_day(data, student, day):
     for slot in range(data.num_slots):
         if data.students[slot, day, student] == 1:
@@ -40,6 +40,10 @@ def penalty_windows(data, slot_, day, student):
                 window_l += 1
     return total_windows / 6
 
+def penalty_slot2(data, slot, day, student):
+    left = slot - 1 >= 0 and data.students[slot - 1, day, student] == 2
+    right = slot + 1 < data.num_slots and data.students[slot + 1, day, student] == 2
+    return 0.5 if (left or right) else 0
 
 def fitness(solution, data):
     fitness_count = 0
@@ -54,6 +58,7 @@ def fitness(solution, data):
                         penalty_free_day(data, student, day)
                         + penalty_slot(slot)
                         + penalty_windows(data, slot, day, student)
+                        + penalty_slot2(data, slot, day, student)
                     )
 
                     if fitness < 1 - w:
