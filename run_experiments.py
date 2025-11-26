@@ -9,17 +9,17 @@ from src.algorithms.simulated_annealing import simulated_annealing, validate_sol
 
 
 def run_sa_experiments(config_path="results/configurations/sa_configurations.csv"):
-    # Cargar configuraciones
+    # Load configurations
     df = pd.read_csv(config_path)
     path = sys.argv[1]
 
-    # Cargar datos base
+    # Load data and generate initial solution
     loader = DataLoader(path)
     data_dict = loader.load_all()
     data = TimetableData(**data_dict)
     initial_solution = greedy(data)
 
-    # Recorrer todas las configuraciones
+    # Run experiments
     for idx, cfg in df.iterrows():
         print(f"\n🚀 Ejecutando {cfg.config_id}...")
 
@@ -38,10 +38,10 @@ def run_sa_experiments(config_path="results/configurations/sa_configurations.csv
         elapsed = time.time() - start
         final_fit = fitness(
             best_solution, data
-        )  # fitness ahora retorna un número directamente
+        ) 
         valid = validate_solution(best_solution)[0]
 
-        # Guardar resultados en el DataFrame
+        # Update results in DataFrame
         df.at[idx, "time"] = round(elapsed, 2)
         df.at[idx, "final_fitness"] = final_fit
         df.at[idx, "validity"] = valid
@@ -50,7 +50,7 @@ def run_sa_experiments(config_path="results/configurations/sa_configurations.csv
             f"✅ {cfg.config_id}: fitness={final_fit:.2f}, time={elapsed:.2f}s, valid={valid}"
         )
 
-        # Guardar el CSV actualizado cada vez (por si se interrumpe el proceso)
+        # Save intermediate results
         df.to_csv(config_path, index=False)
 
     print("\n🏁 Experimentos completados.")
