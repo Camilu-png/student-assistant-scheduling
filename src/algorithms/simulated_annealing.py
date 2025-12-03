@@ -52,7 +52,7 @@ def simulated_annealing(
             new_fitness = fitness(new_solution, data)
         delta_fitness = new_fitness - current_fitness
 
-        if delta_fitness > 0 or np.exp(delta_fitness / temperature) > np.random.rand():
+        if delta_fitness > 0 or np.exp(delta_fitness / temperature) >= np.random.rand():
             current_solution = new_solution
             current_fitness = new_fitness
 
