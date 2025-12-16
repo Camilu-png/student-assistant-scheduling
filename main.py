@@ -1,4 +1,5 @@
 import sys
+import os
 from datetime import datetime
 from src.baseline import baseline
 from src.data_loader import DataLoader
@@ -7,16 +8,26 @@ from src.initial_solution import greedy
 from src.fitness import fitness, fitness_without_soft_contraints
 from src.algorithms.simulated_annealing import simulated_annealing
 from src.save_solution import save_configuration, save_solution_to_csv
+from src.save_solution import save_mapper
 
+def run_solver(case_path):
+    """
+    Ejecuta el solver sobre una carpeta con estructura:
+    assistants/, baseline/, students/, forbidden.csv
+    y crea case_path/solution/ para guardar los resultados.
+    """
 
-def main():
-    print("==========================================")
-    print("  Educational Timetabling Solver - v1.0")
-    print("==========================================\n")
-    path = sys.argv[1]
+    print("===================================================")
+    print(f" Ejecutando solver para el caso: {case_path}")
+    print("===================================================\n")
+
+    # Crear carpeta solution/
+    solution_dir = os.path.join(case_path, "solution")
+    os.makedirs(solution_dir, exist_ok=True)
+
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
-    # Parameters for Simulated Annealing
+    # Parámetros SA
     initial_temp = 100_000.0
     final_temp = 50.0
     alpha = 0.95
@@ -27,82 +38,88 @@ def main():
         final_temp,
         alpha,
         max_iter,
-        path,
+        solution_dir,
         timestamp,
     )
 
     # Data Load
-    loader = DataLoader(path)
+    loader = DataLoader(case_path)
     data_dict = loader.load_all()
     data = TimetableData(**data_dict)
 
     baseline_schedule = baseline(data)
     bas_fitness = fitness(baseline_schedule, data)
-    bas_fitness_count = fitness_without_soft_contraints(baseline_schedule, data)
-    percentage_bas = (bas_fitness_count * 100) / data.num_students
+    bas_count = fitness_without_soft_contraints(baseline_schedule, data)
 
-    print(f"Baseline Solution Fitness: {bas_fitness}")
-    print(f"Students who can attend the assistantship: {bas_fitness_count}")
-    print(f"Attendance percentage: {round(percentage_bas, 2)}%")
-    baseline_schedule.view()
-    save_solution_to_csv(
-        baseline_schedule,
-        path,
-        timestamp,
-        "baseline_solution",
-    )
+    print(f"Baseline fitness: {bas_fitness}")
+    print(f"Estudiantes que pueden asistir: {bas_count}")
+    print(f"Porcentaje: {round((bas_count * 100) / data.num_students, 2)}%")
 
-    # Create initial solution
+    save_solution_to_csv(baseline_schedule, solution_dir, timestamp, "baseline_solution")
+
+    # Initial solution
     initial_solution = greedy(data)
 
-    # Ejecuting Simulated Annealing whitout soft constraints
-    print("\nStarting Simulated Annealing without soft constraints...\n")
-    whithout_solution = simulated_annealing(
-        initial_solution,
-        initial_temp,
-        final_temp,
-        alpha,
-        max_iter,
-        data,
-        fitness_without_soft_contraints,
-    )
-    whithout_fitness = fitness(whithout_solution, data)
-    whithout_fitness_count = fitness_without_soft_contraints(whithout_solution, data)
-    percentage_without = (whithout_fitness_count * 100) / data.num_students
-
-    print(
-        f"Best Solution Fitness without soft constraints: {round(whithout_fitness, 2)}"
-    )
-    print(f"Students who can attend the assistantship: {whithout_fitness_count}")
-    print(f"Attendance percentage: {round(percentage_without, 2)}%")
-    whithout_solution.view()
-    save_solution_to_csv(
-        whithout_solution,
-        path,
-        timestamp,
-        "sa_without_soft_constraints_solution",
+    # SA whitout soft constraints
+    print("\n--- Simulated Annealing SIN restricciones suaves ---\n")
+    sa_no_soft = simulated_annealing(
+        initial_solution, initial_temp, final_temp, alpha, max_iter, data, fitness_without_soft_contraints
     )
 
-    # Ejecuting Simulated Annealing
-    print("\nStarting Simulated Annealing with constraints...\n")
-    best_solution = simulated_annealing(
+    sa_no_fitness = fitness(sa_no_soft, data)
+    sa_no_count = fitness_without_soft_contraints(sa_no_soft, data)
+
+    print(f"Fitness (sin soft): {sa_no_fitness}")
+    print(f"Estudiantes que pueden asistir: {sa_no_count}")
+    print(f"Porcentaje: {round((sa_no_count * 100) / data.num_students, 2)}%")
+
+    save_solution_to_csv(sa_no_soft, solution_dir, timestamp, "sa_without_soft_constraints_solution")
+
+    # SA con restricciones
+    print("\n--- Simulated Annealing CON restricciones ---\n")
+    sa_best = simulated_annealing(
         initial_solution, initial_temp, final_temp, alpha, max_iter, data, fitness
     )
-    best_fitness = fitness(best_solution, data)
-    best_fitness_count = fitness_without_soft_contraints(best_solution, data)
 
-    print(f"Best Solution Fitness: {round(best_fitness, 2)}")
-    print(f"Students who can attend the assistantship: {best_fitness_count}")
-    print(
-        f"Attendance percentage: {round((best_fitness_count * 100) / data.num_students, 2)}%"
-    )
-    best_solution.view()
-    save_solution_to_csv(
-        best_solution,
-        path,
-        timestamp,
-        "sa_with_constraints_solution",
-    )
+    best_fit = fitness(sa_best, data)
+    best_count = fitness_without_soft_contraints(sa_best, data)
+
+    print(f"Fitness final: {best_fit}")
+    print(f"Estudiantes que pueden asistir: {best_count}")
+    print(f"Porcentaje: {round((best_count * 100) / data.num_students, 2)}%")
+
+    save_solution_to_csv(sa_best, solution_dir, timestamp, "sa_with_constraints_solution")
+    save_mapper(data.mapper, solution_dir, "mapper")
+
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Uso: python main.py <path>")
+        sys.exit(1)
+
+    root_path = sys.argv[1]
+
+    if not os.path.isdir(root_path):
+        print("✘ El path no es una carpeta válida.")
+        sys.exit(1)
+
+    # Detectar carpetas tipo casoX
+    cases = [
+        os.path.join(root_path, folder)
+        for folder in os.listdir(root_path)
+        if os.path.isdir(os.path.join(root_path, folder))
+    ]
+
+    if len(cases) == 0:
+        print("⚠ No se encontraron carpetas de casos. Procesando la carpeta directamente.")
+        run_solver(root_path)
+        return
+
+    print(f"✔ Se encontraron {len(cases)} casos.\n")
+
+    for case in cases:
+        run_solver(case)
 
 
 if __name__ == "__main__":
