@@ -70,7 +70,7 @@ def fitness(solution, data):
     return fitness_count
 
 
-def fitness_without_soft_contraints(solution, data):
+def fitness_without_soft_constraints(solution, data):
     fitness_count = 0
     for student in range(data.num_students):
         assigned = False

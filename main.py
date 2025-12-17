@@ -5,7 +5,7 @@ from src.baseline import baseline
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy
-from src.fitness import fitness, fitness_without_soft_contraints
+from src.fitness import fitness, fitness_without_soft_constraints
 from src.algorithms.simulated_annealing import simulated_annealing
 from src.save_solution import save_configuration, save_solution_to_csv
 from src.save_solution import save_mapper
@@ -27,20 +27,18 @@ def run_solver(case_path):
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
 
-    # Parámetros SA
-    initial_temp = 100_000.0
-    final_temp = 50.0
-    alpha = 0.95
-    max_iter = 100_000
+    # Parámetros 1 SA
+    initial_temp1 = 100.0
+    final_temp1 = 1.0
+    alpha1 = 0.9
+    max_iter1 = 10_000
 
-    save_configuration(
-        initial_temp,
-        final_temp,
-        alpha,
-        max_iter,
-        solution_dir,
-        timestamp,
-    )
+    # Parámetros 2 SA
+    initial_temp2 = 10.0
+    final_temp2 = 1.0
+    alpha2 = 0.85
+    max_iter2 = 10_000
+
 
     # Data Load
     loader = DataLoader(case_path)
@@ -49,7 +47,7 @@ def run_solver(case_path):
 
     baseline_schedule = baseline(data)
     bas_fitness = fitness(baseline_schedule, data)
-    bas_count = fitness_without_soft_contraints(baseline_schedule, data)
+    bas_count = fitness_without_soft_constraints(baseline_schedule, data)
 
     print(f"Baseline fitness: {bas_fitness}")
     print(f"Estudiantes que pueden asistir: {bas_count}")
@@ -63,11 +61,11 @@ def run_solver(case_path):
     # SA whitout soft constraints
     print("\n--- Simulated Annealing SIN restricciones suaves ---\n")
     sa_no_soft = simulated_annealing(
-        initial_solution, initial_temp, final_temp, alpha, max_iter, data, fitness_without_soft_contraints
+        initial_solution, initial_temp1, final_temp1, alpha1, max_iter1, data, fitness_without_soft_constraints
     )
 
     sa_no_fitness = fitness(sa_no_soft, data)
-    sa_no_count = fitness_without_soft_contraints(sa_no_soft, data)
+    sa_no_count = fitness_without_soft_constraints(sa_no_soft, data)
 
     print(f"Fitness (sin soft): {sa_no_fitness}")
     print(f"Estudiantes que pueden asistir: {sa_no_count}")
@@ -77,12 +75,17 @@ def run_solver(case_path):
 
     # SA con restricciones
     print("\n--- Simulated Annealing CON restricciones ---\n")
-    sa_best = simulated_annealing(
-        initial_solution, initial_temp, final_temp, alpha, max_iter, data, fitness
+    sa_best1 = simulated_annealing(
+        initial_solution, initial_temp1, final_temp1, alpha1, max_iter1, data, fitness
+    )
+    sa_best2 = simulated_annealing(
+        initial_solution, initial_temp2, final_temp2, alpha2, max_iter2, data, fitness
     )
 
-    best_fit = fitness(sa_best, data)
-    best_count = fitness_without_soft_contraints(sa_best, data)
+    option1 = (fitness(sa_best1, data), fitness_without_soft_constraints(sa_best1, data), sa_best1)
+    option2 = (fitness(sa_best2, data), fitness_without_soft_constraints(sa_best2, data), sa_best2)
+
+    best_fit, best_count, sa_best = max(option1, option2)
 
     print(f"Fitness final: {best_fit}")
     print(f"Estudiantes que pueden asistir: {best_count}")
