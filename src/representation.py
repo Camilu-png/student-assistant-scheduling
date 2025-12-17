@@ -8,6 +8,7 @@ class TimetableData:
     assistants: np.ndarray  # 3D array [slot][day][assistant]
     forbidden: np.ndarray  # 2D array [slot][day]
     baseline: np.ndarray  # 3D array [slot][day][assistant]
+    mapper: dict  # mapping of indices to file names
 
     @property
     def num_slots(self):

@@ -2,6 +2,8 @@ import csv
 import os
 import numpy as np
 
+from pathlib import Path
+
 from glob import glob
 
 
@@ -24,7 +26,6 @@ class DataLoader:
         folder_path = os.path.join(self.data_dir, folder_name)
         files = sorted(
             glob(os.path.join(folder_path, "*.csv")),
-            key=lambda x: int(os.path.splitext(os.path.basename(x))[0]),
         )
         if not files:
             print(f"No CSV files found in {folder_path}")
@@ -47,6 +48,20 @@ class DataLoader:
         """Lee forbidden.csv como matriz numpy [day][slot]"""
         path = os.path.join(self.data_dir, "forbidden.csv")
         return self.load_csv_file(path)
+    
+    def load_file_index_mapper(self):
+        """
+        Carga el mapeo de índices a nombres de archivos para estudiantes y asistentes.
+        """
+        mapper = {}
+        for folder_name in ["assistants"]:
+            folder_path = os.path.join(self.data_dir, folder_name)
+            files = sorted(
+                glob(os.path.join(folder_path, "*.csv")),
+            )
+            for i, file in enumerate(files):
+                mapper[f"{folder_name}_{i}"] = Path(file).stem
+        return mapper
 
     def load_all(self):
         return {
@@ -54,4 +69,5 @@ class DataLoader:
             "assistants": self.load_assistants_matrix(),
             "forbidden": self.load_forbidden_matrix(),
             "baseline": self.load_baseline_matrix(),
+            "mapper": self.load_file_index_mapper(),
         }
