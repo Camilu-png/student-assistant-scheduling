@@ -51,7 +51,7 @@ class DataLoader:
     
     def load_file_index_mapper(self):
         """
-        Carga el mapeo de índices a nombres de archivos para estudiantes y asistentes.
+        Carga el mapeo de índices a nombres de archivos para ayudantes.
         """
         mapper = {}
         for folder_name in ["assistants"]:
