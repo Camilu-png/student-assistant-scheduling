@@ -7,7 +7,7 @@ from src.representation import TimetableData
 from src.initial_solution import greedy
 from src.fitness import fitness, fitness_without_soft_constraints
 from src.algorithms.simulated_annealing import simulated_annealing
-from src.save_solution import save_configuration, save_solution_to_csv
+from src.save_solution import save_solution_to_csv
 from src.save_solution import save_mapper
 
 def run_solver(case_path):
@@ -22,7 +22,7 @@ def run_solver(case_path):
     print("===================================================\n")
 
     # Crear carpeta solution/
-    solution_dir = os.path.join(case_path, "solution")
+    solution_dir = os.path.join("experiment1", case_path)
     os.makedirs(solution_dir, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")

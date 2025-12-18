@@ -8,7 +8,7 @@ from src.fitness import fitness
 from src.algorithms.simulated_annealing import simulated_annealing, validate_solution
 
 
-def run_sa_experiments(config_path="results/configurations/sa_configurations.csv"):
+def run_sa_experiments(config_path="results/configurations/experimento3-INF295.csv"):
     # Load configurations
     df = pd.read_csv(config_path)
     path = sys.argv[1]

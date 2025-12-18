@@ -2,7 +2,7 @@ import csv
 import pathlib
 
 
-def save_solution_to_csv(solution, filepath, timestamp, name):
+def save_solution_to_csv(solution, filepath, name):
     path_dic = pathlib.Path(filepath)
     with path_dic.joinpath(f"{name}.csv").open("w", newline="") as csvfile:
         writer = csv.writer(csvfile)

@@ -46,7 +46,7 @@ def generate_sa_configurations():
         ]
     ]
 
-    output_path = "results/configurations/sa_configurations.csv"
+    output_path = "results/configurations/experimento3-INF285.csv"
     df.to_csv(output_path, index=False)
 
     print(f"Se generaron {len(df)} configuraciones y se guardaron en '{output_path}'.")
