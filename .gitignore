@@ -207,6 +207,8 @@ marimo/_lsp/
 __marimo__/
 
 utils.txt
+
+#Sensibility information
 solutions/
 data/memoria
 ayudantias_sin_match.csv
