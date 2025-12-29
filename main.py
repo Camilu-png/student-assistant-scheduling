@@ -22,7 +22,7 @@ def run_solver(case_path):
     print("===================================================\n")
 
     # Crear carpeta solution/
-    solution_dir = os.path.join("experiment1", case_path)
+    solution_dir = os.path.join("datos_sensibles/experiment4", case_path) #TODO: case_path: data/memoria/INF-# -> INF#
     os.makedirs(solution_dir, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
@@ -53,7 +53,7 @@ def run_solver(case_path):
     print(f"Estudiantes que pueden asistir: {bas_count}")
     print(f"Porcentaje: {round((bas_count * 100) / data.num_students, 2)}%")
 
-    save_solution_to_csv(baseline_schedule, solution_dir, timestamp, "baseline_solution")
+    save_solution_to_csv(baseline_schedule, solution_dir, "baseline_solution")
 
     # Initial solution
     initial_solution = greedy(data)
@@ -71,7 +71,7 @@ def run_solver(case_path):
     print(f"Estudiantes que pueden asistir: {sa_no_count}")
     print(f"Porcentaje: {round((sa_no_count * 100) / data.num_students, 2)}%")
 
-    save_solution_to_csv(sa_no_soft, solution_dir, timestamp, "sa_without_soft_constraints_solution")
+    save_solution_to_csv(sa_no_soft, solution_dir, "sa_without_soft_constraints_solution")
 
     # SA con restricciones
     print("\n--- Simulated Annealing CON restricciones ---\n")
@@ -85,13 +85,39 @@ def run_solver(case_path):
     option1 = (fitness(sa_best1, data), fitness_without_soft_constraints(sa_best1, data), sa_best1)
     option2 = (fitness(sa_best2, data), fitness_without_soft_constraints(sa_best2, data), sa_best2)
 
-    best_fit, best_count, sa_best = max(option1, option2)
+    print("Option 1:")
+    sa_best1.view()
+    print(f"Fitness final: {option1[0]}")
+    print(f"Estudiantes que pueden asistir: {option1[1]}")
+    print(f"Porcentaje: {round((option1[1] * 100) / data.num_students, 2)}%")
+
+
+    print("Option 2:")
+    sa_best2.view()
+    print(f"Fitness final: {option2[0]}")
+    print(f"Estudiantes que pueden asistir: {option2[1]}")
+    print(f"Porcentaje: {round((option2[1] * 100) / data.num_students, 2)}%")
+
+    # Choose best by fitness (primary), then by count (secondary). Avoid comparing Solution objects directly.
+    if option1[0] > option2[0]:
+        best_fit, best_count, sa_best = option1
+    elif option2[0] > option1[0]:
+        best_fit, best_count, sa_best = option2
+    else:
+        # fitness tie -> use count as tiebreaker
+        if option1[1] > option2[1]:
+            best_fit, best_count, sa_best = option1
+        elif option2[1] > option1[1]:
+            best_fit, best_count, sa_best = option2
+        else:
+            # full tie -> pick option1 by default
+            best_fit, best_count, sa_best = option1
 
     print(f"Fitness final: {best_fit}")
     print(f"Estudiantes que pueden asistir: {best_count}")
     print(f"Porcentaje: {round((best_count * 100) / data.num_students, 2)}%")
 
-    save_solution_to_csv(sa_best, solution_dir, timestamp, "sa_with_constraints_solution")
+    save_solution_to_csv(sa_best, solution_dir, "sa_with_constraints_solution")
     save_mapper(data.mapper, solution_dir, "mapper")
 
 
