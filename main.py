@@ -1,15 +1,15 @@
 import sys
 import os
 from datetime import datetime
+import time
 from src.baseline import baseline
 from src.data_loader import DataLoader
 from src.representation import TimetableData
 from src.initial_solution import greedy
 from src.fitness import fitness, fitness_without_soft_constraints
 from src.algorithms.simulated_annealing import simulated_annealing
-from src.save_solution import save_solution_to_csv
-from src.save_solution import save_mapper
-
+from src.save_solution import save_solution_to_csv, save_mapper, save_runtime
+from src.algorithms.solver import solver
 def run_solver(case_path):
     """
     Ejecuta el solver sobre una carpeta con estructura:
@@ -22,10 +22,12 @@ def run_solver(case_path):
     print("===================================================\n")
 
     # Crear carpeta solution/
-    solution_dir = os.path.join("datos_sensibles/experiment4", case_path) #TODO: case_path: data/memoria/INF-# -> INF#
+    solution_dir = os.path.join("datos_sensibles/experiment7", case_path) #TODO: case_path: data/memoria/INF-# -> INF#
     os.makedirs(solution_dir, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+    start_time = time.time()
+    start_dt = datetime.now().isoformat()
 
     # Parámetros 1 SA
     initial_temp1 = 100.0
@@ -120,6 +122,12 @@ def run_solver(case_path):
     save_solution_to_csv(sa_best, solution_dir, "sa_with_constraints_solution")
     save_mapper(data.mapper, solution_dir, "mapper")
 
+    end_time = time.time()
+    end_dt = datetime.now().isoformat()
+    duration = end_time - start_time
+    print(f"Tiempo de ejecución: {duration:.2f} s")
+    save_runtime(solution_dir, start_dt, end_dt, duration)
+
 
 
 def main():
@@ -133,6 +141,10 @@ def main():
         print("✘ El path no es una carpeta válida.")
         sys.exit(1)
 
+    # Start overall timer
+    overall_start = time.time()
+    overall_start_dt = datetime.now().isoformat()
+
     # Detectar carpetas tipo casoX
     cases = [
         os.path.join(root_path, folder)
@@ -143,12 +155,18 @@ def main():
     if len(cases) == 0:
         print("⚠ No se encontraron carpetas de casos. Procesando la carpeta directamente.")
         run_solver(root_path)
-        return
+    else:
+        print(f"✔ Se encontraron {len(cases)} casos.\n")
+        for case in cases:
+            #run_solver(case)
+            solver(case)
 
-    print(f"✔ Se encontraron {len(cases)} casos.\n")
-
-    for case in cases:
-        run_solver(case)
+    # End overall timer and save
+    overall_end = time.time()
+    overall_end_dt = datetime.now().isoformat()
+    overall_duration = overall_end - overall_start
+    print(f"Tiempo total de ejecución para todos los experimentos: {overall_duration:.2f} s")
+    save_runtime(root_path, overall_start_dt, overall_end_dt, overall_duration)
 
 
 if __name__ == "__main__":
