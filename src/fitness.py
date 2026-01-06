@@ -6,10 +6,14 @@ def penalty_free_day(data, student, day):
     return 0.5  # Penalty for a day without classes
 
 
-def penalty_slot(slot):
-    if slot == 0 or slot == 8 or slot == 9:
+def penalty_slot_eve(slot):
+    if  slot == 8 or slot == 9:
         return 0.4
-    elif slot == 7:
+    else :
+        return 0
+    
+def penalty_slot_day(slot):
+    if slot == 0 or slot == 7:
         return 0.3
     else:
         return 0
@@ -47,7 +51,7 @@ def penalty_slot2(data, slot, day, student):
     return 0.5 if (left or right) else 0
 
 
-def fitness(solution, data):
+def fitness(solution, data, W_FREE_DAY = 0.1, W_SLOT_EVE = 1.0, W_SLOT_DAY = 0.1, W_WINDOWS = 0.5, W_SLOT2 = 0.7):
     fitness_count = 0
     for student in range(data.num_students):
         fitness = float("-inf")
@@ -57,10 +61,11 @@ def fitness(solution, data):
                     slot, day
                 ):
                     w = (
-                        penalty_free_day(data, student, day)
-                        + penalty_slot(slot)
-                        + penalty_windows(data, slot, day, student)
-                        + penalty_slot2(data, slot, day, student)
+                        penalty_free_day(data, student, day) * W_FREE_DAY
+                        + penalty_slot_eve(slot) * W_SLOT_EVE
+                        + penalty_slot_day(slot) * W_SLOT_DAY
+                        + penalty_windows(data, slot, day, student) * W_WINDOWS
+                        + penalty_slot2(data, slot, day, student) * W_SLOT2
                     )
 
                     if fitness < 1 - w:
