@@ -4,16 +4,18 @@ import itertools
 
 
 def generate_weight_configurations():
-    
-    W_FREE_DAY = np.linspace(0,1,10)
-    W_SLOT =  np.linspace(0,1,10)
-    W_WINDSOWS =  np.linspace(0,1,10)
-    W_SLOT2 = np.linspace(0,1,10)
+    W_FREE_DAY = np.linspace(0.1, 1, 7)
+    W_SLOT_EVE = np.linspace(0.5, 1, 7)
+    W_SLOT_DAY = np.linspace(0.1, 1, 7)
+    W_WINDSOWS = np.linspace(0.5, 1, 7)
+    W_SLOT2 = np.linspace(0.1, 1, 7)
 
-    configs = list(itertools.product(W_FREE_DAY, W_SLOT, W_WINDSOWS, W_SLOT2))
-
+    configs = list(
+        itertools.product(W_FREE_DAY, W_SLOT_EVE, W_SLOT_DAY, W_WINDSOWS, W_SLOT2)
+    )
     df = pd.DataFrame(
-        configs, columns=["W_FREE_DAY", "W_SLOT", "W_WINDSOWS", "W_SLOT2"]
+        configs,
+        columns=["W_FREE_DAY", "W_SLOT_EVE", "W_SLOT_DAY", "W_WINDSOWS", "W_SLOT2"],
     )
 
     # Generate all possible combinations of the parameters
@@ -29,7 +31,8 @@ def generate_weight_configurations():
         [
             "config_id",
             "W_FREE_DAY",
-            "W_SLOT",
+            "W_SLOT_EVE",
+            "W_SLOT_DAY",
             "W_WINDSOWS",
             "W_SLOT2",
             "time",
@@ -40,7 +43,7 @@ def generate_weight_configurations():
         ]
     ]
 
-    output_path = "results/configurations/weight/10.csv"
+    output_path = "results/configurations/weight/7.csv"
     df.to_csv(output_path, index=False)
 
     print(f"Se generaron {len(df)} configuraciones y se guardaron en '{output_path}'.")
