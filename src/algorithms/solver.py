@@ -14,6 +14,7 @@ from ..fitness import (
 
 path = "datos_sensibles/solver/experiment18"
 
+
 def save_solution(model, X, slots, days, assistants, case_path):
     solution_dir = os.path.join(path, case_path)
     os.makedirs(solution_dir, exist_ok=True)
@@ -97,16 +98,16 @@ def solve_lp_problem(asignature, data):
 
     # Objective function with penalties
     model += lpSum(
-        X[i, j, k]
-        - penalty_free_day(data=data, student=l, day=j) * W_FREE_DAY
-        - penalty_slot_eve(slot=i) * W_SLOT_EVE
-        - penalty_slot_day(slot=i) * W_SLOT_DAY
-        - penalty_windows(data=data, slot_=i, day=j, student=l) * W_WINDOWS
-        - penalty_slot2(data=data, slot=i, day=j, student=l) * W_SLOT2
-        for i in slots
-        for j in days
-        for k in assistants
-        for l in students
+        X[slot, day, assistant]
+        - penalty_free_day(data=data, student=student, day=day) * W_FREE_DAY
+        - penalty_slot_eve(slot=slot) * W_SLOT_EVE
+        - penalty_slot_day(slot=slot) * W_SLOT_DAY
+        - penalty_windows(data=data, slot_=slot, day=day, student=student) * W_WINDOWS
+        - penalty_slot2(data=data, slot=slot, day=day, student=student) * W_SLOT2
+        for slot in slots
+        for day in days
+        for assistant in assistants
+        for student in students
     )
 
     # Solve the problem
