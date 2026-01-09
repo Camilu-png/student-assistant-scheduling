@@ -48,7 +48,7 @@ class DataLoader:
         """Lee forbidden.csv como matriz numpy [day][slot]"""
         path = os.path.join(self.data_dir, "forbidden.csv")
         return self.load_csv_file(path)
-    
+
     def load_file_index_mapper(self):
         """
         Carga el mapeo de índices a nombres de archivos para ayudantes.
