@@ -1,6 +1,40 @@
+import csv
+import os
+import pathlib
 from pulp import *
 from ..data_loader import DataLoader
 from ..representation import TimetableData
+from ..fitness import (
+    penalty_windows,
+    penalty_free_day,
+    penalty_slot_eve,
+    penalty_slot_day,
+    penalty_slot2,
+)
+
+path = "datos_sensibles/solver/experiment18"
+
+
+def save_solution(model, X, slots, days, assistants, case_path):
+    solution_dir = os.path.join(path, case_path)
+    os.makedirs(solution_dir, exist_ok=True)
+    path_dic = pathlib.Path(solution_dir)
+    print(f"Status: {LpStatus[model.status]}")
+    with path_dic.joinpath(f"solver.csv").open("w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Print the assignments
+        for i in slots:
+            row = []
+            for j in days:
+                assigned = "·"
+                for k in assistants:
+                    if value(X[i, j, k]) == 1:
+                        print(f"Assistant {k} assigned to slot {i} on day {j}")
+                        assigned = k
+                        break
+                row.append(assigned)
+            writer.writerow(row)
 
 
 def solve_lp_problem(asignature, data):
@@ -12,22 +46,24 @@ def solve_lp_problem(asignature, data):
     slots = range(data.num_slots)
     assistants = range(data.num_assistants)
     students = range(data.num_students)
-    NOCTURN_SLOTS = {8, 9}
-    BORDER_SLOTS = {0, 7}
-
-    M = data.num_slots  # Big M constant
-
+    # NOCTURN_SLOTS = {8, 9}
+    # BORDER_SLOTS = {0, 7}
+    W_FREE_DAY = 0.1
+    W_SLOT_EVE = 1.0
+    W_SLOT_DAY = 0.1
+    W_WINDOWS = 0.5
+    W_SLOT2 = 0.7
     # Variables
-    W = LpVariable.dicts(  # Window penalties
-        "Windows",
-        ((i, j, l) for i in slots for j in days for l in students),
-        lowBound=0,
-        cat="Continuous",
-    )
+    # W = LpVariable.dicts(
+    #     "Windows",
+    #     ((i, j, l) for i in slots for j in days for l in students),
+    #     lowBound=0,
+    #     cat="Continuous",
+    # )
 
-    D = LpVariable.dicts( #El estudiante asiste a la universidad exclusivamente por la ayudantía.
-        "DayFree", ((j, l) for j in days for l in students), cat="Binary"
-    )
+    # D = LpVariable.dicts(  # El estudiante asiste a la universidad exclusivamente por la ayudantía.
+    #     "DayFree", ((j, l) for j in days for l in students), cat="Continuous"
+    # )
 
     # Solution
     X = LpVariable.dicts(
@@ -40,7 +76,12 @@ def solve_lp_problem(asignature, data):
     for i in slots:
         for j in days:
             for k in assistants:
+                # El ayudante está disponible
                 if data.assistants[i, j, k] == 0:
+                    # Se puede o no asignar a este bloque
+                    model += X[i, j, k] <= 1
+                # El ayudante no está disponible
+                elif data.assistants[i, j, k] == 1:
                     model += X[i, j, k] == 0
 
     # No puede asignarse más de un ayudante a un mismo bloque de tiempo.
@@ -67,94 +108,86 @@ def solve_lp_problem(asignature, data):
     for k in assistants:
         model += lpSum(X[i, j, k] for i in slots for j in days) == 1
 
-    """ Soft constraints """
-    # Peso por ventanas
-    # for i in slots:
+    # """ Soft constraints """
+    # # Peso por ventanas
+    # for l in students:
     #     for j in days:
-    #         for l in students:
-    #             model += W[i, j, l] <= lpSum(data.students[p, j, l] for p in range(0, i))
-    #             model += W[i, j, l] <= lpSum(data.students[p, j, l] for p in range(i + 1, data.num_slots))
-    #             model += W[i, j, l] >= lpSum(data.students[p, j, l] for p in range(0, i)) \
-    #                                 + lpSum(data.students[p, j, l] for p in range(i + 1, data.num_slots)) - 1
-    # --- Peso por ventanas corregido según tu fórmula ---
-    for j in days:
-        for l in students:
-            # Extraer el horario del estudiante para ese día como una lista
-            # Supongamos que 2 significa clase obligatoria
-            student_schedule = [data.students[p, j, l] for p in slots]
-            
-            for i in slots:
-                # Si el estudiante NO tiene clase en el bloque i, calculamos la ventana potencial
-                if student_schedule[i] == 0:
-                    # Search l
-                    clases_antes = [p for p, val in enumerate(student_schedule[:i]) if val == 2]
-                    l_block = max(clases_antes) if clases_antes else -1
-                    
-                    # Search m
-                    clases_despues = [p + i + 1 for p, val in enumerate(student_schedule[i+1:]) if val == 2]
-                    m_block = min(clases_despues) if clases_despues else -1
-                    
-                    v_l = (i - l_block - 1) if l_block > -1 else 0
-                    v_m = (m_block - i - 1) if m_block > -1 else 0
-                    total_ventana = v_l + v_m
-                    
-                    for k in assistants:
-                        model += W[i, j, l] >= total_ventana * X[i, j, k]
-                else:
-                    model += W[i, j, l] == 0
+    #         for i in slots:
+    #             if data.students[i, j, l] == 0:
+    #                 model += W[i, j, l] == penalty_windows(
+    #                         data=data, slot_=i, day=j, student=l
+    #                     )
 
-    # Peso por día libre
-    for j in days:
-        for l in students:
-            # Si hay ayudantía ese día y el estudiante no tiene clases → penaliza
-            model += D[j, l] <= lpSum(X[i, j, k] for i in slots for k in assistants)
-            model += lpSum(data.students[i, j, l] for i in slots) <= M * (1 - D[j, l])
+    # # Peso por día libre
+    # for j in days:
+    #     for l in students:
+    #         # Contar si el estudiante tiene clases ese día (2 = obligatorio)
+    #         # tiene_clase = 1 if any(data.students[i, j, l] == 2 or data.students[i,j,l] == 0 for i in slots) else 0
 
+    #         # if tiene_clase == 0:
+    #         #     # Si no tiene clase, D es 1 si se asigna una ayudantía ese día
+    #         #     model += D[(j, l)] == lpSum(
+    #         #         X[(i, j, k)] for i in slots for k in assistants
+    #         #     )
+    #         # else:
+    #         #     # Si tiene clase, no hay penalización por día libre
+    #         model += D[(j, l)] == penalty_free_day(
+    #             data=data, student=l, day=j
+    #         )
 
-    nocturnal_penalty = lpSum(
-        0.4 * X[i, j, k] for i in NOCTURN_SLOTS for j in days for k in assistants
+    # nocturnal_penalty = lpSum(
+    #     0.4 * X[i, j, k] for i in NOCTURN_SLOTS for j in days for k in assistants
+    # )
+    # border_penalty = lpSum(
+    #     0.3 * X[i, j, k] for i in BORDER_SLOTS for j in days for k in assistants
+    # )
+
+    # adjacency_penalty = lpSum(
+    #     0.5 * X[i, j, k]
+    #     for j in days
+    #     for t in slots
+    #     if any(data.students[t, j, l] == 2 for l in students)
+    #     for i in [t - 1, t + 1]
+    #     if 0 <= i < data.num_slots
+    #     for k in assistants
+    # )
+
+    # total_weights = (
+    #     lpSum(W[i, j, l] for l in students) * 0.5
+    #     + lpSum(D[j, l]  for l in students) * 0.1
+    #     + nocturnal_penalty * 1.0
+    #     + border_penalty * 0.1
+    #     + adjacency_penalty * 0.7
+    # )
+
+    # # Objective function: Maximize the number of students that can attend
+    # attendance = lpSum(
+    #     X[i, j, k]
+    #     for i in slots
+    #     for j in days
+    #     for k in assistants
+    #     for l in students
+    #     if data.students[i, j, l] == 0
+    # )
+
+    # model += attendance - total_weights
+
+    model += lpSum(
+        X[i, j, k]
+        - penalty_free_day(data=data, student=l, day=j) * W_FREE_DAY
+        - penalty_slot_eve(slot=i) * W_SLOT_EVE
+        - penalty_slot_day(slot=i) * W_SLOT_DAY
+        - penalty_windows(data=data, slot_=i, day=j, student=l) * W_WINDOWS
+        - penalty_slot2(data=data, slot=i, day=j, student=l) * W_SLOT2
+        for i in slots
+        for j in days
+        for k in assistants
+        for l in students
     )
-    border_penalty = lpSum(
-        0.3 * X[i, j, k] for i in BORDER_SLOTS for j in days for k in assistants
-    )
-
-    adjacency_penalty = lpSum(
-    0.5 * X[i, j, k]
-    for j in days
-    for t in slots
-    if any(data.students[t, j, l] == 2 for l in students)
-    for i in [t - 1, t + 1]
-    if 0 <= i < data.num_slots
-    for k in assistants
-)
-
-    weights = lpSum((1 / 6) * W[i, j, l] for i in slots for j in days for l in students)
-    + 0.5 * lpSum(D[j, l] for j in days for l in students)
-    + nocturnal_penalty
-    + border_penalty
-    + adjacency_penalty
-
-    # Objective function: Maximize the number of students that can attend
-    attendance = lpSum(
-    X[i, j, k]
-    for i in slots
-    for j in days
-    for k in assistants
-    for l in students
-    if data.students[i, j, l] == 0
-)
-
-    model += M*attendance - weights
 
     # Solve the problem
-    model.solve(PULP_CBC_CMD(msg=0))
-    print(f"Status: {LpStatus[model.status]}")
-    # Print the assignments
-    for i in slots:
-        for j in days:
-            for k in assistants:
-                if value(X[i, j, k]) == 1:
-                    print(f"Assistant {k} assigned to slot {i} on day {j}")
+    model.solve(PULP_CBC_CMD(msg=1))
+    save_solution(model, X, slots, days, assistants, asignature)
 
 
 def solver(case_path):
