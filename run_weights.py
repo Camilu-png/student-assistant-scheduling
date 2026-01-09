@@ -8,7 +8,7 @@ from src.fitness import fitness, fitness_without_soft_constraints
 from src.algorithms.simulated_annealing import simulated_annealing, validate_solution
 
 
-def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
+def run_weight_experiments(config_path="results/configurations/weight/7.csv"):
     # Load configurations
     df = pd.read_csv(config_path)
     path = sys.argv[1]
@@ -22,7 +22,9 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
     # Determine first row without results (use 'final_fitness' as marker)
     not_done = df["final_fitness"].isna()
     if not not_done.any():
-        print("\nℹ️ Todos los experimentos ya tienen resultados. No hay nada que ejecutar.")
+        print(
+            "\nℹ️ Todos los experimentos ya tienen resultados. No hay nada que ejecutar."
+        )
         return df
 
     # Find integer location of first not-done row
@@ -32,7 +34,9 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
             cfg_id = df.iloc[start_loc].config_id
         except Exception:
             cfg_id = start_loc
-        print(f"\n⏭️ Saltando {start_loc} experimentos ya completados. Reanudando en la fila {start_loc} (config_id={cfg_id}).")
+        print(
+            f"\n⏭️ Saltando {start_loc} experimentos ya completados. Reanudando en la fila {start_loc} (config_id={cfg_id})."
+        )
 
     # Load data and generate initial solution
     loader = DataLoader(path)
@@ -50,7 +54,8 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
         # Note: the generated CSV uses the column name `W_WINDSOWS` (typo),
         # map it to the `W_WINDOWS` parameter expected by `fitness`.
         w_free = float(cfg.W_FREE_DAY)
-        w_slot = float(cfg.W_SLOT)
+        w_slot_eve = float(cfg.W_SLOT_EVE)
+        w_slot_day = float(cfg.W_SLOT_DAY)
         # support both possible spellings just in case
         if "W_WINDOWS" in df.columns:
             w_windows = float(cfg.W_WINDOWS)
@@ -58,8 +63,16 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
             w_windows = float(cfg.W_WINDSOWS)
         w_slot2 = float(cfg.W_SLOT2)
 
-        weighted_fitness = lambda sol, data, W_FREE_DAY=w_free, W_SLOT=w_slot, W_WINDOWS=w_windows, W_SLOT2=w_slot2: fitness(
-            sol, data, W_FREE_DAY, W_SLOT, W_WINDOWS, W_SLOT2
+        weighted_fitness = (
+            lambda sol,
+            data,
+            W_FREE_DAY=w_free,
+            W_SLOT_EVE=w_slot_eve,
+            W_SLOT_DAY=w_slot_day,
+            W_WINDOWS=w_windows,
+            W_SLOT2=w_slot2: fitness(
+                sol, data, W_FREE_DAY, W_SLOT_EVE, W_SLOT_DAY, W_WINDOWS, W_SLOT2
+            )
         )
 
         # SA hyperparameter sets: use the same defaults as in `main.py`.
@@ -115,8 +128,16 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
             weighted_fitness,
         )
 
-        option1 = (weighted_fitness(sa_best1, data), fitness_without_soft_constraints(sa_best1, data), sa_best1)
-        option2 = (weighted_fitness(sa_best2, data), fitness_without_soft_constraints(sa_best2, data), sa_best2)
+        option1 = (
+            weighted_fitness(sa_best1, data),
+            fitness_without_soft_constraints(sa_best1, data),
+            sa_best1,
+        )
+        option2 = (
+            weighted_fitness(sa_best2, data),
+            fitness_without_soft_constraints(sa_best2, data),
+            sa_best2,
+        )
 
         print("Option 1:")
         sa_best1.view()
@@ -158,9 +179,13 @@ def run_weight_experiments(config_path="results/configurations/weight/10.csv"):
         df.at[idx, "final_fitness"] = final_fit
         df.at[idx, "validity"] = valid
         df.at[idx, "total"] = data.num_students
-        df.at[idx, "conflictos"] = data.num_students - fitness_without_soft_constraints(best_solution, data)
+        df.at[idx, "conflictos"] = data.num_students - fitness_without_soft_constraints(
+            best_solution, data
+        )
 
-        print(f"✅ {cfg.config_id}: fitness={final_fit:.2f}, time={elapsed:.2f}s, valid={valid}")
+        print(
+            f"✅ {cfg.config_id}: fitness={final_fit:.2f}, time={elapsed:.2f}s, valid={valid}"
+        )
 
         # Save intermediate results
         df.to_csv(config_path, index=False)

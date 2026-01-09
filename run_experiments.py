@@ -36,9 +36,7 @@ def run_sa_experiments(config_path="results/configurations/experimento3-INF295.c
         )
 
         elapsed = time.time() - start
-        final_fit = fitness(
-            best_solution, data
-        ) 
+        final_fit = fitness(best_solution, data)
         valid = validate_solution(best_solution)[0]
 
         # Update results in DataFrame

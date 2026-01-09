@@ -1,6 +1,7 @@
 from src.representation import Solution
 
-''' Generate a baseline solution based on predefined assignments in the data. '''
+""" Generate a baseline solution based on predefined assignments in the data. """
+
 
 def baseline(data):
     baseline = Solution(data)
