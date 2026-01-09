@@ -213,3 +213,6 @@ solutions/
 data/memoria
 datos_sensibles
 extract_data
+
+# Sensibility information for notebooks
+notebooks/
