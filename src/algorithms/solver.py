@@ -55,7 +55,14 @@ def solve_lp_problem(asignature, data):
 
     # Solution
     X = LpVariable.dicts(
-        "X", ((slot, day, assistant) for slot in slots for day in days for assistant in assistants), cat="Binary"
+        "X",
+        (
+            (slot, day, assistant)
+            for slot in slots
+            for day in days
+            for assistant in assistants
+        ),
+        cat="Binary",
     )
 
     # Constraints
@@ -107,7 +114,8 @@ def solve_lp_problem(asignature, data):
         for day in days
         for slot in slots
         for assistant in assistants
-        for student in students if data.students[slot, day, student] == 0 and X[slot, day, assistant] == 1
+        for student in students
+        if data.students[slot, day, student] == 0 and X[slot, day, assistant] == 1
     )
 
     # Solve the problem
