@@ -12,8 +12,7 @@ from ..fitness import (
     penalty_slot2,
 )
 
-path = "datos_sensibles/solver/experiment20"
-
+path = "datos_sensibles/solver/experiment21"
 
 def save_solution(model, X, slots, days, assistants, case_path):
     solution_dir = os.path.join(path, case_path)
@@ -24,14 +23,14 @@ def save_solution(model, X, slots, days, assistants, case_path):
         writer = csv.writer(csvfile)
 
         # Print the assignments
-        for i in slots:
+        for slot in slots:
             row = []
-            for j in days:
+            for day in days:
                 assigned = "·"
-                for k in assistants:
-                    if value(X[i, j, k]) == 1:
-                        print(f"Assistant {k} assigned to slot {i} on day {j}")
-                        assigned = k
+                for assistant in assistants:
+                    if value(X[slot, day, assistant]) == 1:
+                        print(f"Assistant {assistant} assigned to slot {slot} on day {day}")
+                        assigned = assistant
                         break
                 row.append(assigned)
             writer.writerow(row)
@@ -82,7 +81,7 @@ def solve_lp_problem(asignature, data):
     # No puede asignarse más de un ayudante a un mismo bloque de tiempo.
     for slot in slots:
         for day in days:
-            model += lpSum(X[slot, day, k] for k in assistants) <= 1
+            model += lpSum(X[slot, day, assistant] for assistant in assistants) <= 1
 
     # El horario elegido no puede coincidir con las clases obligatorias de ningún estudiante matriculado en la asignatura.
     for slot in slots:
@@ -105,17 +104,16 @@ def solve_lp_problem(asignature, data):
 
     # Objective function with penalties
     model += lpSum(
-        X[slot, day, assistant]
-        - penalty_free_day(data=data, student=student, day=day) * W_FREE_DAY
-        - penalty_slot_eve(slot=slot) * W_SLOT_EVE
-        - penalty_slot_day(slot=slot) * W_SLOT_DAY
-        - penalty_windows(data=data, slot_=slot, day=day, student=student) * W_WINDOWS
-        - penalty_slot2(data=data, slot=slot, day=day, student=student) * W_SLOT2
+        1
+        - penalty_free_day(data, student, day) * W_FREE_DAY
+        - penalty_slot_eve(slot) * W_SLOT_EVE
+        - penalty_slot_day(slot) * W_SLOT_DAY
+        - penalty_windows(data, slot, day, student) * W_WINDOWS
+        - penalty_slot2(data, slot, day, student) * W_SLOT2
+        for student in students
         for day in days
         for slot in slots
-        for assistant in assistants
-        for student in students
-        if data.students[slot, day, student] == 0 and X[slot, day, assistant] == 1
+        if data.students[slot, day, student] == 0 and lpSum(X[slot, day, assistant] for assistant in assistants) == 1
     )
 
     # Solve the problem
