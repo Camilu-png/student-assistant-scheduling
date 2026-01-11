@@ -12,7 +12,7 @@ from ..fitness import (
     penalty_slot2,
 )
 
-path = "datos_sensibles/solver/experiment21"
+path = "datos_sensibles/solver/experiment22"
 
 def save_solution(model, X, slots, days, assistants, case_path):
     solution_dir = os.path.join(path, case_path)
@@ -38,7 +38,7 @@ def save_solution(model, X, slots, days, assistants, case_path):
 
 def solve_lp_problem(asignature, data):
     # Create the LP problem
-    model = LpProblem(f"Timetabling_{asignature}", LpMaximize)
+    model = LpProblem(f"Timetabling_{asignature}", LpMinimize)
 
     # Parameters
     days = range(data.num_days)
