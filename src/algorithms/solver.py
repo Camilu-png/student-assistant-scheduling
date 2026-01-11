@@ -12,7 +12,7 @@ from ..fitness import (
     penalty_slot2,
 )
 
-path = "datos_sensibles/solver/experiment22"
+path = "datos_sensibles/solver/experiment23"
 
 def save_solution(model, X, slots, days, assistants, case_path):
     solution_dir = os.path.join(path, case_path)
@@ -38,7 +38,7 @@ def save_solution(model, X, slots, days, assistants, case_path):
 
 def solve_lp_problem(asignature, data):
     # Create the LP problem
-    model = LpProblem(f"Timetabling_{asignature}", LpMinimize)
+    model = LpProblem(f"Timetabling_{asignature}", LpMaximize)
 
     # Parameters
     days = range(data.num_days)
@@ -66,16 +66,12 @@ def solve_lp_problem(asignature, data):
 
     # Constraints
 
-    # El ayudante debe estar disponible en el horario (i,j) elegido para su asignación.
+    # El ayudante no puede asignarse si no está disponible
     for slot in slots:
         for day in days:
             for assistant in assistants:
                 # El ayudante está disponible
-                if data.assistants[slot, day, assistant] == 0:
-                    # Se puede o no asignar a este bloque
-                    model += X[slot, day, assistant] <= 1
-                # El ayudante no está disponible
-                elif data.assistants[slot, day, assistant] == 1:
+                if data.assistants[slot, day, assistant] == 1:
                     model += X[slot, day, assistant] == 0
 
     # No puede asignarse más de un ayudante a un mismo bloque de tiempo.
@@ -83,19 +79,11 @@ def solve_lp_problem(asignature, data):
         for day in days:
             model += lpSum(X[slot, day, assistant] for assistant in assistants) <= 1
 
-    # El horario elegido no puede coincidir con las clases obligatorias de ningún estudiante matriculado en la asignatura.
-    for slot in slots:
-        for day in days:
-            if any(data.students[slot, day, l] == 2 for l in students):
-                for assistant in assistants:
-                    model += X[slot, day, assistant] == 0
-
     # El horario elegido no puede ser un horario prohibido
     for slot in slots:
         for day in days:
             if data.forbidden[slot, day] == 1:
-                for assistant in assistants:
-                    model += X[slot, day, assistant] == 0
+                model += lpSum(X[slot, day, assistant] for assistant in assistants) == 0
 
     """ Extra constraints """
     # Cada ayudante debe ser asignado
@@ -117,7 +105,7 @@ def solve_lp_problem(asignature, data):
     )
 
     # Solve the problem
-    model.solve(PULP_CBC_CMD(msg=1))
+    model.solve()
     save_solution(model, X, slots, days, assistants, asignature)
 
 
