@@ -12,7 +12,7 @@ from ..fitness import (
     penalty_slot2,
 )
 
-path = "datos_sensibles/solver/experiment18"
+path = "datos_sensibles/solver/experiment19"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -107,7 +107,7 @@ def solve_lp_problem(asignature, data):
         for slot in slots
         for day in days
         for assistant in assistants
-        for student in students
+        for student in students if data.students[slot, day, student] == 0
     )
 
     # Solve the problem
