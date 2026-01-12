@@ -5,7 +5,7 @@ from pulp import *
 from ..data_loader import DataLoader
 from ..representation import TimetableData
 
-path = "datos_sensibles/solver/experiment26"
+path = "datos_sensibles/solver/experiment27"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -73,6 +73,14 @@ def solve_lp_problem(asignature, data):
         cat="Binary",
     )
 
+    # Auxiliary variables for penalties
+    # Free day penalty variables
+    D = LpVariable.dicts(
+        "D",
+        ((student, day) for student in students for day in days),
+        cat="Binary",
+    )
+
     # Hard constraints
     # El ayudante no puede asignarse si no está disponible
     for slot in slots:
@@ -111,79 +119,57 @@ def solve_lp_problem(asignature, data):
     for student in students:
         model += lpSum(Y[student, slot, day] for slot in slots for day in days) <= 1
 
-    # Objective function: Maximize attendance with penalty terms (like SA)
+    # Auxiliary constraints for penalty modeling
+    # Free day penalty: D[student, day] = 1 if student has no tutorial on that day
+    for student in students:
+        for day in days:
+            total_attendance_day = lpSum(Y[student, slot, day] for slot in slots)
+            # D = 1 if total_attendance_day = 0, D = 0 otherwise
+            model += D[student, day] >= 1 - total_attendance_day  # If attendance=0, D>=1
+            model += D[student, day] <= 1 - total_attendance_day  # If attendance>0, D=0
+
+    # Objective function: Maximize attendance with properly modeled penalties
 
     # Base attendance
     attendance = lpSum(
         Y[student, slot, day] for student in students for slot in slots for day in days
     )
 
-    # Penalty terms (converted to linear expressions)
+    # 1. Free day penalty - properly linearized
+    free_day_penalty = W_FREE_DAY * 0.5 * lpSum(
+        D[student, day] for student in students for day in days
+    )
 
-    # 1. Free day penalty - penalize students with no classes on a day
-    free_day_penalty = 0
-    for student in students:
-        for day in days:
-            total_attendance_day = lpSum(Y[student, slot, day] for slot in slots)
-            # If total_attendance_day == 0, add penalty of 0.5
-            # Using: penalty = 0.5 * (1 - min(1, total_attendance_day))
-            # Linearized as: penalty = 0.5 * max(0, 1 - total_attendance_day)
-            # Since total_attendance_day is binary sum, this becomes:
-            if total_attendance_day == 0:
-                free_day_penalty += (
-                    W_FREE_DAY * 0.5 
-                )
+    # 2. Evening slot penalty (slots 8, 9) - direct linear penalty
+    eve_slot_penalty = W_SLOT_EVE * 0.4 * lpSum(
+        Y[student, slot, day] 
+        for student in students 
+        for slot in [8, 9]
+        for day in days
+    )
 
-    # 2. Evening slot penalty (slots 8, 9)
-    eve_slot_penalty = 0
-    for student in students:
-        for slot in [8, 9]:
-            for day in days:
-                eve_slot_penalty += W_SLOT_EVE * 0.4 * Y[student, slot, day]
+    # 3. Day slot penalty (slots 0, 7) - direct linear penalty  
+    day_slot_penalty = W_SLOT_DAY * 0.3 * lpSum(
+        Y[student, slot, day]
+        for student in students
+        for slot in [0, 7]
+        for day in days
+    )
 
-    # 3. Day slot penalty (slots 0, 7)
-    day_slot_penalty = 0
-    for student in students:
-        for slot in [0, 7]:
-            for day in days:
-                day_slot_penalty += W_SLOT_DAY * 0.3 * Y[student, slot, day]
-
-    # 4. Window penalty - simplified linear version
-    window_penalty = 0
-    total_windows = 0
-    for student in students:
-        for day in days:
-            for slot_assignment in slots:
-                found_assignment = False
-                window_l = 0
-                window_m = 0
-                if Y[student, slot_assignment, day] == 1:
-                    total_windows += window_l
-                    window_l = 0
-                    found_assignment = True
-                elif found_assignment:
-                    if data.students[slot_assignment, day, student] == 1:
-                        total_windows += window_m
-                        break
-                    else:
-                        window_m += 1
-                else:
-                    if data.students[slot_assignment, day, student] == 1:
-                        window_l = 0
-                    else:
-                        window_l += 1
-        window_penalty += W_WINDOWS * (total_windows / 6.0)
-
-    # 5. Slot2 penalty - adjacent to subject-related activities
+    # 4. Slot2 penalty - adjacent to subject-related activities
     slot2_penalty = 0
     for student in students:
         for slot in slots:
             for day in days:
-                if (slot > 0 and data.students[slot - 1, day, student] == 2) or (
-                    slot < data.num_slots - 1
-                    and data.students[slot + 1, day, student] == 2
-                ):
-                    slot2_penalty += W_SLOT2 * 0.5 * Y[student, slot, day]
+                adjacent_penalty = 0
+                # Check if adjacent slots have subject-related activities (value 2)
+                if slot > 0 and data.students[slot - 1, day, student] == 2:
+                    adjacent_penalty += W_SLOT2 * 0.5
+                if slot < data.num_slots - 1 and data.students[slot + 1, day, student] == 2:
+                    adjacent_penalty += W_SLOT2 * 0.5
+                
+                if adjacent_penalty > 0:
+                    slot2_penalty += adjacent_penalty * Y[student, slot, day]
 
     # Combined objective: maximize attendance, minimize penalties
     model += (
@@ -191,7 +177,6 @@ def solve_lp_problem(asignature, data):
         - free_day_penalty
         - eve_slot_penalty
         - day_slot_penalty
-        - window_penalty
         - slot2_penalty
     )
 
