@@ -5,7 +5,7 @@ from pulp import *
 from ..data_loader import DataLoader
 from ..representation import TimetableData
 
-path = "datos_sensibles/solver/experiment25"
+path = "datos_sensibles/solver/experiment26"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -150,18 +150,29 @@ def solve_lp_problem(asignature, data):
 
     # 4. Window penalty - simplified linear version
     window_penalty = 0
+    total_windows = 0
     for student in students:
         for day in days:
-            for slot1 in slots:
-                for slot2 in range(slot1 + 2, data.num_slots):
-                    # Penalty for having classes at slot1 and slot2 but not slot1+1
-                    gap_penalty = (
-                        Y[student, slot1, day]
-                        + Y[student, slot2, day]
-                        - Y[student, slot1 + 1, day]
-                    )
-                    # Only penalize if gap_penalty > 1 (i.e., there's a gap)
-                    window_penalty += W_WINDOWS * (1.0 / 6.0) * gap_penalty
+            for slot_assignment in slots:
+                found_assignment = False
+                window_l = 0
+                window_m = 0
+                if Y[student, slot_assignment, day] == 1:
+                    total_windows += window_l
+                    window_l = 0
+                    found_assignment = True
+                elif found_assignment:
+                    if data.students[slot_assignment, day, student] == 1:
+                        total_windows += window_m
+                        break
+                    else:
+                        window_m += 1
+                else:
+                    if data.students[slot_assignment, day, student] == 1:
+                        window_l = 0
+                    else:
+                        window_l += 1
+        window_penalty += W_WINDOWS * (total_windows / 6.0)
 
     # 5. Slot2 penalty - adjacent to subject-related activities
     slot2_penalty = 0
