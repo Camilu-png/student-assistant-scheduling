@@ -12,7 +12,8 @@ from ..fitness import (
     penalty_slot2,
 )
 
-path = "datos_sensibles/solver/experiment23"
+path = "datos_sensibles/solver/experiment24"
+
 
 def save_solution(model, X, slots, days, assistants, case_path):
     solution_dir = os.path.join(path, case_path)
@@ -29,7 +30,9 @@ def save_solution(model, X, slots, days, assistants, case_path):
                 assigned = "·"
                 for assistant in assistants:
                     if value(X[slot, day, assistant]) == 1:
-                        print(f"Assistant {assistant} assigned to slot {slot} on day {day}")
+                        print(
+                            f"Assistant {assistant} assigned to slot {slot} on day {day}"
+                        )
                         assigned = assistant
                         break
                 row.append(assigned)
@@ -88,7 +91,7 @@ def solve_lp_problem(asignature, data):
     """ Extra constraints """
     # Cada ayudante debe ser asignado
     for assistant in assistants:
-        model += lpSum(X[i, j, assistant] for i in slots for j in days) == 1
+        model += lpSum(X[slot, day, assistant] for slot in slots for day in days) == 1
 
     # Objective function with penalties
     model += lpSum(
@@ -101,7 +104,8 @@ def solve_lp_problem(asignature, data):
         for student in students
         for day in days
         for slot in slots
-        if data.students[slot, day, student] == 0 and lpSum(X[slot, day, assistant] for assistant in assistants) == 1
+        if data.students[slot, day, student] == 0
+        and lpSum(X[slot, day, assistant] for assistant in assistants) == 1
     )
 
     # Solve the problem
