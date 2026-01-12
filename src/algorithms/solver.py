@@ -5,7 +5,7 @@ from pulp import *
 from ..data_loader import DataLoader
 from ..representation import TimetableData
 
-path = "datos_sensibles/solver/experiment27"
+path = "datos_sensibles/solver/experiment28"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -159,17 +159,19 @@ def solve_lp_problem(asignature, data):
     # 4. Slot2 penalty - adjacent to subject-related activities
     slot2_penalty = 0
     for student in students:
-        for slot in slots:
-            for day in days:
+        for day in days:
+            for slot in slots:
                 adjacent_penalty = 0
                 # Check if adjacent slots have subject-related activities (value 2)
                 if slot > 0 and data.students[slot - 1, day, student] == 2:
                     adjacent_penalty += W_SLOT2 * 0.5
-                if slot < data.num_slots - 1 and data.students[slot + 1, day, student] == 2:
+                    break  # Only apply once per slot
+                elif slot < data.num_slots - 1 and data.students[slot + 1, day, student] == 2:
                     adjacent_penalty += W_SLOT2 * 0.5
-                
-                if adjacent_penalty > 0:
-                    slot2_penalty += adjacent_penalty * Y[student, slot, day]
+                    break  # Only apply once per slot
+            if adjacent_penalty > 0:
+                slot2_penalty += adjacent_penalty * Y[student, slot, day]
+                break  # Only apply once per slot
 
     # Combined objective: maximize attendance, minimize penalties
     model += (
