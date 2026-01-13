@@ -6,7 +6,7 @@ from ..data_loader import DataLoader
 from ..representation import TimetableData
 from ..fitness import penalty_windows
 
-path = "datos_sensibles/solver/experiment30"
+path = "datos_sensibles/solver/experiment31"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -154,15 +154,19 @@ def solve_lp_problem(asignature, data):
         model += lpSum(Y[student, slot, day] for slot in slots for day in days) <= 1
 
     # Auxiliary constraints for penalty modeling
-    # Free day penalty: D[student, day] = 1 if student has no tutorial on that day
+    # Free day penalty: D[student, day] = 1 if student has no classes on that day AND attends tutorial
     for student in students:
         for day in days:
-            total_attendance_day = lpSum(Y[student, slot, day] for slot in slots)
-            # D = 1 if total_attendance_day = 0, D = 0 otherwise
-            # Correct modeling: D >= 1 - total_attendance_day and D <= 1 - total_attendance_day
-            # But since total_attendance_day can be 0 or 1 (student attends at most 1 tutorial per week)
-            # We need: D = 1 - total_attendance_day for this day
-            model += D[student, day] == 1 - total_attendance_day
+            # Check if student has any classes on this day
+            has_classes_today = any(data.students[slot, day, student] == 1 for slot in slots)
+            
+            if not has_classes_today:  # Student is free all day
+                total_attendance_day = lpSum(Y[student, slot, day] for slot in slots)
+                # D = 1 if student is free all day AND attends tutorial (penalty applies)
+                model += D[student, day] == total_attendance_day
+            else:
+                # Student has classes, no free day penalty
+                model += D[student, day] == 0
 
     # Objective function: Maximize number of students who can attend (like SA)
 
@@ -231,8 +235,8 @@ def solve_lp_problem(asignature, data):
     )
 
     # Combined objective: maximize student attendance (primary), minimize penalties (secondary)
-    # Scale penalties down so they act as tiebreakers, not primary objectives
-    penalty_scale = 0.01  # Make penalties much smaller than student count
+    # Use same penalty scale as SA for fair comparison
+    penalty_scale = 1.0  # Use full penalty weights like SA
     model += student_attendance - penalty_scale * (
         free_day_penalty
         + eve_slot_penalty
@@ -294,14 +298,28 @@ def solve_lp_problem(asignature, data):
             for slot in slots
             for day in days
         )
+        
+        # Calculate slot2 penalty value
+        slot2_penalty_val = 0
+        for student in students:
+            for slot in slots:
+                for day in days:
+                    penalty_coefficient = 0
+                    if slot > 0 and data.students[slot - 1, day, student] == 2:
+                        penalty_coefficient += W_SLOT2 * 0.5
+                    if slot < data.num_slots - 1 and data.students[slot + 1, day, student] == 2:
+                        penalty_coefficient += W_SLOT2 * 0.5
+                    if penalty_coefficient > 0:
+                        slot2_penalty_val += penalty_coefficient * value(Y[student, slot, day])
 
         print(f"Free day penalty: {free_penalty_val}")
         print(f"Evening slot penalty: {eve_penalty_val}")
         print(f"Day slot penalty: {day_penalty_val}")
         print(f"Window penalty: {window_penalty_val}")
+        print(f"Slot2 penalty: {slot2_penalty_val}")
 
         total_penalty = (
-            free_penalty_val + eve_penalty_val + day_penalty_val + window_penalty_val
+            free_penalty_val + eve_penalty_val + day_penalty_val + window_penalty_val + slot2_penalty_val
         )
         print(f"Total penalty: {total_penalty}")
         print(
