@@ -1,12 +1,14 @@
 import csv
 import os
 import pathlib
+from datetime import datetime
 from pulp import *
 from ..data_loader import DataLoader
 from ..representation import TimetableData
 from ..fitness import penalty_windows
+from ..save_solution import save_runtime
 
-path = "datos_sensibles/solver/experiment32"
+path = "datos_sensibles/solver/experiment33"
 
 
 def save_solution(model, X, slots, days, assistants, case_path):
@@ -33,7 +35,11 @@ def save_solution(model, X, slots, days, assistants, case_path):
             writer.writerow(row)
 
 
-def solve_lp_problem(asignature, data):
+def solve_lp_problem(asignature, data, solution_dir):
+    # Record start time
+    start_time = datetime.now()
+    start_iso = start_time.isoformat()
+
     # Create the LP problem
     model = LpProblem(f"Timetabling_{asignature}", LpMaximize)
 
@@ -234,6 +240,11 @@ def solve_lp_problem(asignature, data):
     # Solve the problem
     model.solve()
 
+    # Record end time
+    end_time = datetime.now()
+    end_iso = end_time.isoformat()
+    duration_seconds = (end_time - start_time).total_seconds()
+
     # Debug information
     print(f"Solver status: {LpStatus[model.status]}")
     print(f"Objective value: {value(model.objective)}")
@@ -249,6 +260,9 @@ def solve_lp_problem(asignature, data):
 
     save_solution(model, X, slots, days, assistants, asignature)
 
+    # Save runtime information
+    save_runtime(solution_dir, start_iso, end_iso, duration_seconds)
+
 
 def solver(case_path):
     print(f"\nSolving LP problem for case: {case_path}")
@@ -256,5 +270,6 @@ def solver(case_path):
     data_dict = loader.load_all()
     data = TimetableData(**data_dict)
     asignature = case_path.split("/")[-1]
-    solve_lp_problem(asignature, data)
+    solution_dir = os.path.join(path, asignature)
+    solve_lp_problem(asignature, data, solution_dir)
     print(f"LP problem solved for case: {case_path}\n")
