@@ -216,3 +216,4 @@ extract_data
 
 # Sensibility information for notebooks
 notebooks/
+!notebooks/configurations/
