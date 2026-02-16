@@ -215,5 +215,5 @@ datos_sensibles
 extract_data
 
 # Sensibility information for notebooks
-notebooks/
+notebooks/*
 !notebooks/configurations/
