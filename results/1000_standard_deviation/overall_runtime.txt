@@ -1,0 +1,6 @@
+Start: 2026-02-16T17:33:28.532006
+End: 2026-02-16T23:00:26.899588
+Duration: 19618.37 seconds
+Total experiments: 24000
+Subjects: 12
+Runs per subject per algorithm: 1000
